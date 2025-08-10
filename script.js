@@ -1,17 +1,174 @@
-// DOM Elements
-const hamburger = document.querySelector('.hamburger');
-const navMenu = document.querySelector('.nav-menu');
-const yearlyToggle = document.getElementById('yearlyToggle');
-const pricingCards = document.querySelectorAll('.pricing-card');
-const reviewCards = document.querySelectorAll('.review-card');
-const prevBtn = document.querySelector('.carousel-btn.prev');
-const nextBtn = document.querySelector('.carousel-btn.next');
-
-// State
+// State variables
 let currentReview = 0;
-const totalReviews = reviewCards.length;
 let cart = [];
 let currentPaymentMethod = 'card';
+
+// Cart Functions - Define first so they're available immediately
+function addToCart(planId, planName, price, type) {
+    // Check if item already exists
+    const existingItem = cart.find(item => item.id === planId);
+
+    if (existingItem) {
+        showNotification('Item already in cart!', 'warning');
+        return;
+    }
+
+    const item = {
+        id: planId,
+        name: planName,
+        price: price,
+        type: type
+    };
+
+    cart.push(item);
+    updateCartUI();
+    showNotification('Added to cart!', 'success');
+}
+
+function removeFromCart(planId) {
+    cart = cart.filter(item => item.id !== planId);
+    updateCartUI();
+    showNotification('Removed from cart', 'info');
+}
+
+function updateCartUI() {
+    const cartCount = document.querySelector('.cart-count');
+    const cartItems = document.getElementById('cartItems');
+    const cartTotal = document.getElementById('cartTotal');
+    const totalAmount = document.getElementById('totalAmount');
+
+    if (!cartCount) return; // Exit if elements don't exist yet
+
+    cartCount.textContent = cart.length;
+
+    if (cart.length === 0) {
+        if (cartItems) cartItems.innerHTML = '<p class="empty-cart">Your cart is empty</p>';
+        if (cartTotal) cartTotal.style.display = 'none';
+    } else {
+        let total = 0;
+        const cartHTML = cart.map(item => {
+            total += item.price;
+            return `
+                <div class="cart-item">
+                    <div class="item-info">
+                        <h4>${item.name}</h4>
+                        <p>$${item.price}${item.type === 'monthly' ? '/month' : item.type === 'lifetime' ? ' one-time' : '/month'}</p>
+                    </div>
+                    <div>
+                        <span class="item-price">$${item.price}</span>
+                        <button class="remove-item" onclick="removeFromCart('${item.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        if (cartItems) cartItems.innerHTML = cartHTML;
+        if (totalAmount) totalAmount.textContent = total;
+        if (cartTotal) cartTotal.style.display = 'block';
+    }
+}
+
+function openCart() {
+    const cartModal = document.getElementById('cartModal');
+    if (cartModal) cartModal.style.display = 'block';
+}
+
+function closeCart() {
+    const cartModal = document.getElementById('cartModal');
+    if (cartModal) cartModal.style.display = 'none';
+}
+
+function proceedToCheckout() {
+    if (cart.length === 0) {
+        showNotification('Your cart is empty!', 'warning');
+        return;
+    }
+
+    closeCart();
+    updateCheckoutUI();
+    const checkoutModal = document.getElementById('checkoutModal');
+    if (checkoutModal) checkoutModal.style.display = 'block';
+}
+
+function updateCheckoutUI() {
+    const checkoutItems = document.getElementById('checkoutItems');
+    const checkoutTotal = document.getElementById('checkoutTotal');
+
+    if (!checkoutItems || !checkoutTotal) return;
+
+    let total = 0;
+    checkoutItems.innerHTML = cart.map(item => {
+        total += item.price;
+        return `
+            <div class="checkout-item">
+                <span>${item.name}</span>
+                <span>$${item.price}</span>
+            </div>
+        `;
+    }).join('');
+
+    checkoutTotal.textContent = total;
+}
+
+function closeCheckout() {
+    const checkoutModal = document.getElementById('checkoutModal');
+    if (checkoutModal) checkoutModal.style.display = 'none';
+}
+
+function showPaymentMethod(method) {
+    currentPaymentMethod = method;
+
+    // Update tab states
+    document.querySelectorAll('.payment-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+
+    // Find the clicked tab and make it active
+    const clickedTab = event.target.closest('.payment-tab');
+    if (clickedTab) clickedTab.classList.add('active');
+
+    // Show/hide payment forms
+    document.querySelectorAll('.payment-form').forEach(form => {
+        form.classList.remove('active');
+    });
+    const targetForm = document.getElementById(method + 'Payment');
+    if (targetForm) targetForm.classList.add('active');
+}
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        border-radius: 0.5rem;
+        color: white;
+        font-weight: 500;
+        z-index: 10001;
+        animation: slideInRight 0.3s ease-out;
+    `;
+
+    const colors = {
+        success: '#10b981',
+        error: '#ef4444',
+        warning: '#f59e0b',
+        info: '#3b82f6'
+    };
+
+    notification.style.background = colors[type] || colors.info;
+    notification.textContent = message;
+
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+        notification.style.animation = 'slideOutRight 0.3s ease-out';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
 
 // Initialize everything when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
@@ -21,10 +178,14 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeNavigation();
     initializeCounters();
     initializeScrollEffects();
+    initializePaymentForms();
 });
 
 // Navigation Menu Toggle
 function initializeNavigation() {
+    const hamburger = document.querySelector('.hamburger');
+    const navMenu = document.querySelector('.nav-menu');
+
     if (hamburger && navMenu) {
         hamburger.addEventListener('click', () => {
             hamburger.classList.toggle('active');
@@ -95,6 +256,11 @@ function initializeCounters() {
 
 // Reviews Carousel
 function initializeCarousel() {
+    const reviewCards = document.querySelectorAll('.review-card');
+    const nextBtn = document.querySelector('.carousel-btn.next');
+    const prevBtn = document.querySelector('.carousel-btn.prev');
+    const totalReviews = reviewCards.length;
+
     if (reviewCards.length === 0) return;
 
     function showReview(index) {
@@ -129,6 +295,7 @@ function initializeCarousel() {
 
 // Pricing Toggle (Monthly/Yearly)
 function initializePricingToggle() {
+    const yearlyToggle = document.getElementById('yearlyToggle');
     if (!yearlyToggle) return;
 
     yearlyToggle.addEventListener('change', function() {
@@ -261,329 +428,57 @@ function addButtonEffects() {
     });
 }
 
-// Add ripple animation CSS
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes ripple {
-        to {
-            transform: scale(2);
-            opacity: 0;
-        }
-    }
+// Payment form initialization
+function initializePaymentForms() {
+    const cardForm = document.getElementById('cardForm');
+    const cryptoForm = document.getElementById('cryptoForm');
 
-    .particle {
-        pointer-events: none;
-    }
-
-    @media (max-width: 768px) {
-        .nav-menu {
-            position: fixed;
-            left: -100%;
-            top: 70px;
-            flex-direction: column;
-            background-color: rgba(10, 10, 15, 0.95);
-            width: 100%;
-            text-align: center;
-            transition: 0.3s;
-            box-shadow: 0 10px 27px rgba(0, 0, 0, 0.05);
-            backdrop-filter: blur(10px);
-            padding: 2rem 0;
-        }
-
-        .nav-menu.active {
-            left: 0;
-        }
-
-        .nav-menu li {
-            margin: 1rem 0;
-        }
-
-        .hamburger.active span:nth-child(2) {
-            opacity: 0;
-        }
-
-        .hamburger.active span:nth-child(1) {
-            transform: translateY(8px) rotate(45deg);
-        }
-
-        .hamburger.active span:nth-child(3) {
-            transform: translateY(-8px) rotate(-45deg);
-        }
-    }
-`;
-document.head.appendChild(style);
-
-// Scroll-based navbar background
-window.addEventListener('scroll', function() {
-    const navbar = document.querySelector('.navbar');
-    if (window.scrollY > 100) {
-        navbar.style.background = 'rgba(10, 10, 15, 0.98)';
-    } else {
-        navbar.style.background = 'rgba(10, 10, 15, 0.95)';
-    }
-});
-
-// Parallax effect for hero section
-window.addEventListener('scroll', function() {
-    const scrolled = window.pageYOffset;
-    const parallax = document.querySelector('.hero-bg');
-    if (parallax) {
-        const speed = scrolled * 0.5;
-        parallax.style.transform = `translateY(${speed}px)`;
-    }
-});
-
-// Performance optimization: Debounce scroll events
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-// Optimize scroll events
-const optimizedScrollHandler = debounce(function() {
-    // Scroll-based effects here
-}, 10);
-
-window.addEventListener('scroll', optimizedScrollHandler);
-
-// Add loading animation
-window.addEventListener('load', function() {
-    document.body.classList.add('loaded');
-
-    // Trigger initial animations
-    setTimeout(() => {
-        const heroElements = document.querySelectorAll('.hero-title, .hero-subtitle, .hero-description, .hero-buttons, .hero-stats');
-        heroElements.forEach((el, index) => {
-            setTimeout(() => {
-                el.style.opacity = '1';
-                el.style.transform = 'translateY(0)';
-            }, index * 200);
+    if (cardForm) {
+        cardForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await processCardPayment();
         });
-    }, 100);
-});
-
-// Error handling for missing elements
-function safeQuerySelector(selector) {
-    try {
-        return document.querySelector(selector);
-    } catch (error) {
-        console.warn(`Element not found: ${selector}`);
-        return null;
     }
-}
 
-// Add intersection observer for better performance
-const lazyLoadObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            const element = entry.target;
-            element.classList.add('visible');
-            lazyLoadObserver.unobserve(element);
-        }
-    });
-}, {
-    threshold: 0.1,
-    rootMargin: '50px'
-});
-
-// Observe elements that should be lazy loaded
-document.querySelectorAll('.feature-card, .pricing-card, .download-card').forEach(el => {
-    lazyLoadObserver.observe(el);
-});
-
-// Add custom cursor effect for interactive elements
-document.addEventListener('mousemove', function(e) {
-    const cursor = document.querySelector('.custom-cursor');
-    if (cursor) {
-        cursor.style.left = e.clientX + 'px';
-        cursor.style.top = e.clientY + 'px';
-    }
-});
-
-// Keyboard navigation support
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        // Close any open modals or menus
-        const hamburger = document.querySelector('.hamburger');
-        const navMenu = document.querySelector('.nav-menu');
-        if (hamburger && navMenu) {
-            hamburger.classList.remove('active');
-            navMenu.classList.remove('active');
-        }
-    }
-});
-
-// Enhanced accessibility
-function enhanceAccessibility() {
-    // Add ARIA labels to interactive elements
-    const buttons = document.querySelectorAll('button:not([aria-label])');
-    buttons.forEach(button => {
-        const text = button.textContent.trim();
-        if (text) {
-            button.setAttribute('aria-label', text);
-        }
-    });
-
-    // Add focus indicators
-    const focusableElements = document.querySelectorAll('a, button, input, [tabindex]');
-    focusableElements.forEach(element => {
-        element.addEventListener('focus', function() {
-            this.style.outline = '2px solid #667eea';
-            this.style.outlineOffset = '2px';
+    if (cryptoForm) {
+        cryptoForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await processCryptoPayment();
         });
+    }
 
-        element.addEventListener('blur', function() {
-            this.style.outline = 'none';
+    // Card number formatting
+    const cardNumberInput = document.getElementById('cardNumber');
+    const expiryInput = document.getElementById('expiryDate');
+    const cvvInput = document.getElementById('cvv');
+
+    if (cardNumberInput) {
+        cardNumberInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/g, '');
+            let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+            if (formattedValue.length > 19) formattedValue = formattedValue.substr(0, 19);
+            e.target.value = formattedValue;
         });
-    });
-}
-
-// Initialize accessibility features
-enhanceAccessibility();
-
-// Cart Functions
-function addToCart(planId, planName, price, type) {
-    // Check if item already exists
-    const existingItem = cart.find(item => item.id === planId);
-
-    if (existingItem) {
-        showNotification('Item already in cart!', 'warning');
-        return;
     }
 
-    const item = {
-        id: planId,
-        name: planName,
-        price: price,
-        type: type
-    };
-
-    cart.push(item);
-    updateCartUI();
-    showNotification('Added to cart!', 'success');
-}
-
-function removeFromCart(planId) {
-    cart = cart.filter(item => item.id !== planId);
-    updateCartUI();
-    showNotification('Removed from cart', 'info');
-}
-
-function updateCartUI() {
-    const cartCount = document.querySelector('.cart-count');
-    const cartItems = document.getElementById('cartItems');
-    const cartTotal = document.getElementById('cartTotal');
-    const totalAmount = document.getElementById('totalAmount');
-
-    cartCount.textContent = cart.length;
-
-    if (cart.length === 0) {
-        cartItems.innerHTML = '<p class="empty-cart">Your cart is empty</p>';
-        cartTotal.style.display = 'none';
-    } else {
-        let total = 0;
-        cartItems.innerHTML = cart.map(item => {
-            total += item.price;
-            return `
-                <div class="cart-item">
-                    <div class="item-info">
-                        <h4>${item.name}</h4>
-                        <p>${item.price}${item.type === 'monthly' ? '/month' : item.type === 'lifetime' ? ' one-time' : '/month'}</p>
-                    </div>
-                    <div>
-                        <span class="item-price">${item.price}</span>
-                        <button class="remove-item" onclick="removeFromCart('${item.id}')">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-            `;
-        }).join('');
-
-        totalAmount.textContent = total;
-        cartTotal.style.display = 'block';
-    }
-}
-
-function openCart() {
-    document.getElementById('cartModal').style.display = 'block';
-}
-
-function closeCart() {
-    document.getElementById('cartModal').style.display = 'none';
-}
-
-function proceedToCheckout() {
-    if (cart.length === 0) {
-        showNotification('Your cart is empty!', 'warning');
-        return;
+    if (expiryInput) {
+        expiryInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^0-9]/g, '');
+            if (value.length >= 2) {
+                value = value.substr(0, 2) + '/' + value.substr(2, 2);
+            }
+            e.target.value = value;
+        });
     }
 
-    closeCart();
-    updateCheckoutUI();
-    document.getElementById('checkoutModal').style.display = 'block';
-}
-
-function updateCheckoutUI() {
-    const checkoutItems = document.getElementById('checkoutItems');
-    const checkoutTotal = document.getElementById('checkoutTotal');
-
-    let total = 0;
-    checkoutItems.innerHTML = cart.map(item => {
-        total += item.price;
-        return `
-            <div class="checkout-item">
-                <span>${item.name}</span>
-                <span>${item.price}</span>
-            </div>
-        `;
-    }).join('');
-
-    checkoutTotal.textContent = total;
-}
-
-function closeCheckout() {
-    document.getElementById('checkoutModal').style.display = 'none';
-}
-
-function showPaymentMethod(method) {
-    currentPaymentMethod = method;
-
-    // Update tab states
-    document.querySelectorAll('.payment-tab').forEach(tab => {
-        tab.classList.remove('active');
-    });
-    event.target.classList.add('active');
-
-    // Show/hide payment forms
-    document.querySelectorAll('.payment-form').forEach(form => {
-        form.classList.remove('active');
-    });
-    document.getElementById(method + 'Payment').classList.add('active');
+    if (cvvInput) {
+        cvvInput.addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/[^0-9]/g, '').substr(0, 3);
+        });
+    }
 }
 
 // Payment Processing
-document.addEventListener('DOMContentLoaded', function() {
-    // Card form submission
-    document.getElementById('cardForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        await processCardPayment();
-    });
-
-    // Crypto form submission
-    document.getElementById('cryptoForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        await processCryptoPayment();
-    });
-});
-
 async function processCardPayment() {
     const formData = {
         email: document.getElementById('email').value,
@@ -673,7 +568,7 @@ function showCryptoPaymentInstructions(data) {
                 <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
             </div>
             <div style="padding: 2rem;">
-                <p>Please send <strong>${cart.reduce((sum, item) => sum + item.price, 0)} USD</strong> worth of ${data.cryptocurrency?.toUpperCase() || 'BTC'} to:</p>
+                <p>Please send <strong>$${cart.reduce((sum, item) => sum + item.price, 0)} USD</strong> worth of ${data.cryptocurrency?.toUpperCase() || 'BTC'} to:</p>
                 <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 0.5rem; margin: 1rem 0; word-break: break-all;">
                     <strong>${data.walletAddress || 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh'}</strong>
                 </div>
@@ -735,71 +630,6 @@ async function sendAccountEmail(accountNumber) {
     }
 }
 
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 1rem 1.5rem;
-        border-radius: 0.5rem;
-        color: white;
-        font-weight: 500;
-        z-index: 10001;
-        animation: slideInRight 0.3s ease-out;
-    `;
-
-    const colors = {
-        success: '#10b981',
-        error: '#ef4444',
-        warning: '#f59e0b',
-        info: '#3b82f6'
-    };
-
-    notification.style.background = colors[type] || colors.info;
-    notification.textContent = message;
-
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-        notification.style.animation = 'slideOutRight 0.3s ease-out';
-        setTimeout(() => notification.remove(), 300);
-    }, 3000);
-}
-
-// Card number formatting
-document.addEventListener('DOMContentLoaded', function() {
-    const cardNumberInput = document.getElementById('cardNumber');
-    const expiryInput = document.getElementById('expiryDate');
-    const cvvInput = document.getElementById('cvv');
-
-    if (cardNumberInput) {
-        cardNumberInput.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/g, '');
-            let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
-            if (formattedValue.length > 19) formattedValue = formattedValue.substr(0, 19);
-            e.target.value = formattedValue;
-        });
-    }
-
-    if (expiryInput) {
-        expiryInput.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/[^0-9]/g, '');
-            if (value.length >= 2) {
-                value = value.substr(0, 2) + '/' + value.substr(2, 2);
-            }
-            e.target.value = value;
-        });
-    }
-
-    if (cvvInput) {
-        cvvInput.addEventListener('input', function(e) {
-            e.target.value = e.target.value.replace(/[^0-9]/g, '').substr(0, 3);
-        });
-    }
-});
-
 // Close modals when clicking outside
 window.addEventListener('click', function(e) {
     const modals = document.querySelectorAll('.modal');
@@ -810,9 +640,38 @@ window.addEventListener('click', function(e) {
     });
 });
 
-// Add notification animations
-const notificationStyles = document.createElement('style');
-notificationStyles.textContent = `
+// Scroll-based navbar background
+window.addEventListener('scroll', function() {
+    const navbar = document.querySelector('.navbar');
+    if (navbar) {
+        if (window.scrollY > 100) {
+            navbar.style.background = 'rgba(10, 10, 15, 0.98)';
+        } else {
+            navbar.style.background = 'rgba(10, 10, 15, 0.95)';
+        }
+    }
+});
+
+// Parallax effect for hero section
+window.addEventListener('scroll', function() {
+    const scrolled = window.pageYOffset;
+    const parallax = document.querySelector('.hero-bg');
+    if (parallax) {
+        const speed = scrolled * 0.5;
+        parallax.style.transform = `translateY(${speed}px)`;
+    }
+});
+
+// Add necessary CSS for animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes ripple {
+        to {
+            transform: scale(2);
+            opacity: 0;
+        }
+    }
+
     @keyframes slideInRight {
         from { transform: translateX(100%); opacity: 0; }
         to { transform: translateX(0); opacity: 1; }
@@ -822,8 +681,48 @@ notificationStyles.textContent = `
         from { transform: translateX(0); opacity: 1; }
         to { transform: translateX(100%); opacity: 0; }
     }
+
+    .particle {
+        pointer-events: none;
+    }
+
+    @media (max-width: 768px) {
+        .nav-menu {
+            position: fixed;
+            left: -100%;
+            top: 70px;
+            flex-direction: column;
+            background-color: rgba(10, 10, 15, 0.95);
+            width: 100%;
+            text-align: center;
+            transition: 0.3s;
+            box-shadow: 0 10px 27px rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 2rem 0;
+        }
+
+        .nav-menu.active {
+            left: 0;
+        }
+
+        .nav-menu li {
+            margin: 1rem 0;
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: translateY(8px) rotate(45deg);
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: translateY(-8px) rotate(-45deg);
+        }
+    }
 `;
-document.head.appendChild(notificationStyles);
+document.head.appendChild(style);
 
 // Console welcome message
 console.log('%c🚀 Kraken V3 Enhanced', 'color: #667eea; font-size: 24px; font-weight: bold;');
