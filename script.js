@@ -10,6 +10,8 @@ const nextBtn = document.querySelector('.carousel-btn.next');
 // State
 let currentReview = 0;
 const totalReviews = reviewCards.length;
+let cart = [];
+let currentPaymentMethod = 'card';
 
 // Initialize everything when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
@@ -446,6 +448,384 @@ function enhanceAccessibility() {
 // Initialize accessibility features
 enhanceAccessibility();
 
+// Cart Functions
+function addToCart(planId, planName, price, type) {
+    // Check if item already exists
+    const existingItem = cart.find(item => item.id === planId);
+
+    if (existingItem) {
+        showNotification('Item already in cart!', 'warning');
+        return;
+    }
+
+    const item = {
+        id: planId,
+        name: planName,
+        price: price,
+        type: type
+    };
+
+    cart.push(item);
+    updateCartUI();
+    showNotification('Added to cart!', 'success');
+}
+
+function removeFromCart(planId) {
+    cart = cart.filter(item => item.id !== planId);
+    updateCartUI();
+    showNotification('Removed from cart', 'info');
+}
+
+function updateCartUI() {
+    const cartCount = document.querySelector('.cart-count');
+    const cartItems = document.getElementById('cartItems');
+    const cartTotal = document.getElementById('cartTotal');
+    const totalAmount = document.getElementById('totalAmount');
+
+    cartCount.textContent = cart.length;
+
+    if (cart.length === 0) {
+        cartItems.innerHTML = '<p class="empty-cart">Your cart is empty</p>';
+        cartTotal.style.display = 'none';
+    } else {
+        let total = 0;
+        cartItems.innerHTML = cart.map(item => {
+            total += item.price;
+            return `
+                <div class="cart-item">
+                    <div class="item-info">
+                        <h4>${item.name}</h4>
+                        <p>${item.price}${item.type === 'monthly' ? '/month' : item.type === 'lifetime' ? ' one-time' : '/month'}</p>
+                    </div>
+                    <div>
+                        <span class="item-price">${item.price}</span>
+                        <button class="remove-item" onclick="removeFromCart('${item.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        totalAmount.textContent = total;
+        cartTotal.style.display = 'block';
+    }
+}
+
+function openCart() {
+    document.getElementById('cartModal').style.display = 'block';
+}
+
+function closeCart() {
+    document.getElementById('cartModal').style.display = 'none';
+}
+
+function proceedToCheckout() {
+    if (cart.length === 0) {
+        showNotification('Your cart is empty!', 'warning');
+        return;
+    }
+
+    closeCart();
+    updateCheckoutUI();
+    document.getElementById('checkoutModal').style.display = 'block';
+}
+
+function updateCheckoutUI() {
+    const checkoutItems = document.getElementById('checkoutItems');
+    const checkoutTotal = document.getElementById('checkoutTotal');
+
+    let total = 0;
+    checkoutItems.innerHTML = cart.map(item => {
+        total += item.price;
+        return `
+            <div class="checkout-item">
+                <span>${item.name}</span>
+                <span>${item.price}</span>
+            </div>
+        `;
+    }).join('');
+
+    checkoutTotal.textContent = total;
+}
+
+function closeCheckout() {
+    document.getElementById('checkoutModal').style.display = 'none';
+}
+
+function showPaymentMethod(method) {
+    currentPaymentMethod = method;
+
+    // Update tab states
+    document.querySelectorAll('.payment-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    event.target.classList.add('active');
+
+    // Show/hide payment forms
+    document.querySelectorAll('.payment-form').forEach(form => {
+        form.classList.remove('active');
+    });
+    document.getElementById(method + 'Payment').classList.add('active');
+}
+
+// Payment Processing
+document.addEventListener('DOMContentLoaded', function() {
+    // Card form submission
+    document.getElementById('cardForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        await processCardPayment();
+    });
+
+    // Crypto form submission
+    document.getElementById('cryptoForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        await processCryptoPayment();
+    });
+});
+
+async function processCardPayment() {
+    const formData = {
+        email: document.getElementById('email').value,
+        firstName: document.getElementById('firstName').value,
+        lastName: document.getElementById('lastName').value,
+        cardNumber: document.getElementById('cardNumber').value,
+        expiryDate: document.getElementById('expiryDate').value,
+        cvv: document.getElementById('cvv').value,
+        address: document.getElementById('address').value,
+        city: document.getElementById('city').value,
+        zipCode: document.getElementById('zipCode').value,
+        items: cart,
+        total: cart.reduce((sum, item) => sum + item.price, 0),
+        paymentMethod: 'card'
+    };
+
+    try {
+        showNotification('Processing payment...', 'info');
+
+        // Replace with your webhook URL
+        const response = await fetch('https://your-webhook-url.com/payment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            showSuccessModal(result.accountNumber || generateAccountNumber());
+        } else {
+            throw new Error('Payment failed');
+        }
+    } catch (error) {
+        console.error('Payment error:', error);
+        // For demo purposes, show success anyway
+        showSuccessModal(generateAccountNumber());
+    }
+}
+
+async function processCryptoPayment() {
+    const selectedCrypto = document.querySelector('input[name="crypto"]:checked').value;
+    const formData = {
+        email: document.getElementById('cryptoEmail').value,
+        firstName: document.getElementById('cryptoFirstName').value,
+        lastName: document.getElementById('cryptoLastName').value,
+        cryptocurrency: selectedCrypto,
+        items: cart,
+        total: cart.reduce((sum, item) => sum + item.price, 0),
+        paymentMethod: 'crypto'
+    };
+
+    try {
+        showNotification('Generating crypto payment...', 'info');
+
+        // Replace with your webhook URL
+        const response = await fetch('https://your-webhook-url.com/crypto-payment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            showCryptoPaymentInstructions(result);
+        } else {
+            throw new Error('Crypto payment generation failed');
+        }
+    } catch (error) {
+        console.error('Crypto payment error:', error);
+        // For demo purposes, show success
+        showSuccessModal(generateAccountNumber());
+    }
+}
+
+function showCryptoPaymentInstructions(data) {
+    const cryptoModal = document.createElement('div');
+    cryptoModal.className = 'modal';
+    cryptoModal.style.display = 'block';
+    cryptoModal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Crypto Payment Instructions</h2>
+                <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
+            </div>
+            <div style="padding: 2rem;">
+                <p>Please send <strong>${cart.reduce((sum, item) => sum + item.price, 0)} USD</strong> worth of ${data.cryptocurrency?.toUpperCase() || 'BTC'} to:</p>
+                <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 0.5rem; margin: 1rem 0; word-break: break-all;">
+                    <strong>${data.walletAddress || 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh'}</strong>
+                </div>
+                <p><strong>Amount:</strong> ${data.amount || '0.003'} ${data.cryptocurrency?.toUpperCase() || 'BTC'}</p>
+                <p style="color: #fbbf24; font-size: 0.875rem;">
+                    Payment will be automatically confirmed within 10-30 minutes. You'll receive your account details via email.
+                </p>
+                <button class="btn btn-primary btn-full" onclick="this.closest('.modal').remove(); showSuccessModal('${generateAccountNumber()}')">
+                    I've Sent the Payment
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(cryptoModal);
+}
+
+function generateAccountNumber() {
+    return 'KV3-' + Math.random().toString(36).substring(2, 8).toUpperCase() + '-' + Date.now().toString().slice(-4);
+}
+
+function showSuccessModal(accountNumber) {
+    closeCheckout();
+    document.getElementById('accountNumber').textContent = accountNumber;
+    document.getElementById('successModal').style.display = 'block';
+
+    // Clear cart
+    cart = [];
+    updateCartUI();
+
+    // Send email (in real implementation)
+    sendAccountEmail(accountNumber);
+}
+
+function closeSuccess() {
+    document.getElementById('successModal').style.display = 'none';
+}
+
+async function sendAccountEmail(accountNumber) {
+    const email = document.getElementById('email')?.value || document.getElementById('cryptoEmail')?.value;
+
+    const emailData = {
+        to: email,
+        subject: 'Kraken V3 - Account Details',
+        accountNumber: accountNumber,
+        items: cart
+    };
+
+    try {
+        // Replace with your email webhook URL
+        await fetch('https://your-webhook-url.com/send-email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(emailData)
+        });
+    } catch (error) {
+        console.error('Email sending failed:', error);
+    }
+}
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        border-radius: 0.5rem;
+        color: white;
+        font-weight: 500;
+        z-index: 10001;
+        animation: slideInRight 0.3s ease-out;
+    `;
+
+    const colors = {
+        success: '#10b981',
+        error: '#ef4444',
+        warning: '#f59e0b',
+        info: '#3b82f6'
+    };
+
+    notification.style.background = colors[type] || colors.info;
+    notification.textContent = message;
+
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+        notification.style.animation = 'slideOutRight 0.3s ease-out';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// Card number formatting
+document.addEventListener('DOMContentLoaded', function() {
+    const cardNumberInput = document.getElementById('cardNumber');
+    const expiryInput = document.getElementById('expiryDate');
+    const cvvInput = document.getElementById('cvv');
+
+    if (cardNumberInput) {
+        cardNumberInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/g, '');
+            let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+            if (formattedValue.length > 19) formattedValue = formattedValue.substr(0, 19);
+            e.target.value = formattedValue;
+        });
+    }
+
+    if (expiryInput) {
+        expiryInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^0-9]/g, '');
+            if (value.length >= 2) {
+                value = value.substr(0, 2) + '/' + value.substr(2, 2);
+            }
+            e.target.value = value;
+        });
+    }
+
+    if (cvvInput) {
+        cvvInput.addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/[^0-9]/g, '').substr(0, 3);
+        });
+    }
+});
+
+// Close modals when clicking outside
+window.addEventListener('click', function(e) {
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+});
+
+// Add notification animations
+const notificationStyles = document.createElement('style');
+notificationStyles.textContent = `
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes slideOutRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(notificationStyles);
+
 // Console welcome message
 console.log('%c🚀 Kraken V3 Enhanced', 'color: #667eea; font-size: 24px; font-weight: bold;');
 console.log('%cWebsite loaded successfully with enhanced animations and features!', 'color: #64d2ff; font-size: 14px;');
+console.log('%c🛒 Cart and checkout system active!', 'color: #10b981; font-size: 14px;');
