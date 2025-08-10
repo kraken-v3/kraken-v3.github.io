@@ -21,7 +21,74 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeNavigation();
     initializeCounters();
     initializeScrollEffects();
+    initializeCartButtons();
+    initializePaymentForms();
 });
+
+// Initialize cart and pricing buttons
+function initializeCartButtons() {
+    // Add to cart buttons
+    document.querySelectorAll('.add-to-cart, .btn-cart').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            // Extract plan data from button attributes or parent element
+            const planElement = this.closest('.pricing-card') || this.closest('[data-plan]');
+            if (planElement) {
+                const planId = planElement.dataset.planId || Math.random().toString(36).substr(2, 9);
+                const planName = planElement.dataset.planName || planElement.querySelector('h3, .plan-name')?.textContent || 'Plan';
+                const priceElement = planElement.querySelector('.amount:not([style*="display: none"]), .price');
+                const price = priceElement ? parseFloat(priceElement.textContent.replace(/[^0-9.]/g, '')) || 0 : 0;
+                const isLifetime = planElement.classList.contains('lifetime') || this.textContent.toLowerCase().includes('lifetime');
+
+                addToCart(planId, planName, price, isLifetime ? 'lifetime' : 'subscription');
+            }
+        });
+    });
+
+    // Cart icon click
+    const cartIcon = document.querySelector('.cart-icon, .cart-toggle, .shopping-cart');
+    if (cartIcon) {
+        cartIcon.addEventListener('click', openCart);
+    }
+
+    // Checkout buttons
+    document.querySelectorAll('.checkout-btn, .btn-checkout').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            proceedToCheckout();
+        });
+    });
+}
+
+// Initialize payment form handling
+function initializePaymentForms() {
+    // Card form
+    const cardForm = document.getElementById('cardForm');
+    if (cardForm) {
+        cardForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await processCardPayment();
+        });
+    }
+
+    // Crypto form
+    const cryptoForm = document.getElementById('cryptoForm');
+    if (cryptoForm) {
+        cryptoForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await processCryptoPayment();
+        });
+    }
+
+    // Payment method switching
+    document.querySelectorAll('.payment-method-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const method = this.dataset.method || 'card';
+            switchPaymentMethod(method);
+        });
+    });
+}
 
 // Navigation Menu Toggle
 function initializeNavigation() {
@@ -531,6 +598,20 @@ function closeCheckout() {
     document.getElementById('checkoutModal').style.display = 'none';
 }
 
+function proceedToCheckout() {
+    if (cart.length === 0) {
+        showNotification('Your cart is empty!', 'warning');
+        return;
+    }
+
+    // Close cart modal if open
+    closeCart();
+
+    // Open checkout modal
+    document.getElementById('checkoutModal').style.display = 'block';
+    updateCheckoutSummary();
+}
+
 function updateCheckoutSummary() {
     const checkoutItems = document.getElementById('checkoutItems');
     const checkoutTotal = document.getElementById('checkoutTotal');
@@ -563,27 +644,7 @@ function switchPaymentMethod(method) {
     document.getElementById('cryptoPayment').style.display = method === 'crypto' ? 'block' : 'none';
 }
 
-// Payment Processing
-document.addEventListener('DOMContentLoaded', function() {
-    // Card form submission
-    const cardForm = document.getElementById('cardForm');
-    if (cardForm) {
-        cardForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            await processCardPayment();
-        });
-    }
-
-    // Crypto form submission
-    const cryptoForm = document.getElementById('cryptoForm');
-    if (cryptoForm) {
-        cryptoForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            await processCryptoPayment();
-        });
-    }
-});
-
+// Payment Processing Functions
 async function processCardPayment() {
     const formData = {
         email: document.getElementById('email').value,
@@ -926,6 +987,59 @@ window.onclick = function(event) {
             modal.style.display = 'none';
         }
     });
+}
+
+// Additional utility functions that might be called from HTML
+function toggleCart() {
+    const cartModal = document.getElementById('cartModal');
+    if (cartModal) {
+        if (cartModal.style.display === 'block') {
+            closeCart();
+        } else {
+            openCart();
+        }
+    }
+}
+
+function clearCart() {
+    cart = [];
+    updateCartUI();
+    showNotification('Cart cleared', 'info');
+}
+
+function quickAddToCart(planId, planName, price, type = 'subscription') {
+    addToCart(planId, planName, price, type);
+
+    // Auto-open cart after adding item
+    setTimeout(() => {
+        openCart();
+    }, 500);
+}
+
+// Handle plan button clicks
+function handlePlanSelection(planId, planName, price, isLifetime = false) {
+    const type = isLifetime ? 'lifetime' : 'subscription';
+    addToCart(planId, planName, price, type);
+
+    // Show cart after selection
+    setTimeout(() => {
+        openCart();
+    }, 1000);
+}
+
+// Download function
+function downloadApp() {
+    showNotification('Download starting...', 'info');
+    // In a real scenario, this would trigger the actual download
+    // For now, just show a notification
+    setTimeout(() => {
+        showNotification('Download would start here. Please check with site owner for actual download link.', 'info');
+    }, 1000);
+}
+
+// Discord redirect
+function joinDiscord() {
+    window.open('https://discord.gg/your-discord-server', '_blank');
 }
 
 // Add slide animations
