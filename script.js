@@ -1120,7 +1120,7 @@ function downloadApp() {
 
 // Discord redirect
 function joinDiscord() {
-    window.open('https://discord.gg/your-discord-server', '_blank');
+    window.open('https://discord.gg/VudTN8mxf7', '_blank');
 }
 
 // Add slide animations
