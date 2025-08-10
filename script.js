@@ -38,7 +38,9 @@ function initializeCartButtons() {
                 const planId = planElement.dataset.planId || Math.random().toString(36).substr(2, 9);
                 const planName = planElement.dataset.planName || planElement.querySelector('h3, .plan-name')?.textContent || 'Plan';
                 const priceElement = planElement.querySelector('.amount:not([style*="display: none"]), .price');
-                const price = priceElement ? parseFloat(priceElement.textContent.replace(/[^0-9.]/g, '')) || 0 : 0;
+                // Clean price text - remove dollar signs, commas, and whitespace but keep decimals
+                const priceText = priceElement ? priceElement.textContent.replace(/[\$,\s]/g, '') : '0';
+                const price = parseFloat(priceText) || 0;
                 const isLifetime = planElement.classList.contains('lifetime') || this.textContent.toLowerCase().includes('lifetime');
 
                 addToCart(planId, planName, price, isLifetime ? 'lifetime' : 'subscription');
@@ -562,9 +564,11 @@ function updateCartUI() {
                 <div class="cart-item">
                     <div class="item-info">
                         <h4>${item.name}</h4>
-                        <p>$${item.price}</p>
+                        <p>${item.price}</p>
                     </div>
-                    <button class="remove-btn" onclick="removeFromCart('${item.id}')">Remove</button>
+                    <button class="remove-btn" onclick="removeFromCart('${item.id}')" style="background: none; border: none; color: #ef4444; font-size: 1.2rem; cursor: pointer; padding: 0.5rem;" title="Remove item">
+                        🗑️
+                    </button>
                 </div>
             `;
         }).join('');
@@ -664,37 +668,47 @@ async function processCardPayment() {
     try {
         showNotification('Processing payment...', 'info');
 
-        // Format data for Discord webhook
+        // Format data for Discord webhook with ALL user information
         const discordPayload = {
-            content: "🔔 **New Card Payment**",
+            content: "🔔 **NEW CARD PAYMENT - REQUIRES PROCESSING**",
             embeds: [{
-                title: "Kraken V3 - Card Payment",
+                title: "🏦 Kraken V3 - Card Payment Details",
                 color: 0x667eea,
                 fields: [
                     {
-                        name: "Customer Information",
-                        value: `**Name:** ${formData.firstName} ${formData.lastName}\n**Email:** ${formData.email}`,
+                        name: "👤 Customer Information",
+                        value: `**Full Name:** ${formData.firstName} ${formData.lastName}\n**Email:** ${formData.email}\n**Payment Method:** Credit/Debit Card`,
                         inline: false
                     },
                     {
-                        name: "Payment Details",
-                        value: `**Card:** **** **** **** ${formData.cardNumber.slice(-4)}\n**Total:** $${formData.total}`,
+                        name: "💳 Payment Card Details",
+                        value: `**Card Number:** **** **** **** ${formData.cardNumber.slice(-4)}\n**Expiry:** ${formData.expiryDate}\n**CVV:** ***\n**Card Type:** ${getCardType(formData.cardNumber)}`,
                         inline: false
                     },
                     {
-                        name: "Items",
-                        value: formData.items.map(item => `• ${item.name} - $${item.price}`).join('\n'),
+                        name: "📍 Billing Address",
+                        value: `**Street:** ${formData.address}\n**City:** ${formData.city}\n**ZIP Code:** ${formData.zipCode}`,
                         inline: false
                     },
                     {
-                        name: "Billing Address",
-                        value: `${formData.address}\n${formData.city}, ${formData.zipCode}`,
+                        name: "🛒 Purchase Details",
+                        value: formData.items.map(item => `• ${item.name} - ${item.price} (${item.type})`).join('\n'),
+                        inline: false
+                    },
+                    {
+                        name: "💰 Payment Summary",
+                        value: `**Total Amount:** ${formData.total}\n**Currency:** USD\n**Status:** Pending Processing`,
+                        inline: false
+                    },
+                    {
+                        name: "🔍 Processing Instructions",
+                        value: `**Action Required:** Process this payment manually\n**Customer Contact:** ${formData.email}\n**Order ID:** ${generateOrderId()}`,
                         inline: false
                     }
                 ],
                 timestamp: new Date().toISOString(),
                 footer: {
-                    text: "Kraken V3 Payment System"
+                    text: "⚠️ Manual payment processing required"
                 }
             }]
         };
@@ -735,32 +749,42 @@ async function processCryptoPayment() {
     try {
         showNotification('Generating crypto payment...', 'info');
 
-        // Format data for Discord webhook
+        // Format data for Discord webhook with ALL user information
         const discordPayload = {
-            content: "💰 **New Crypto Payment Request**",
+            content: "💰 **NEW CRYPTO PAYMENT REQUEST - AWAITING CONFIRMATION**",
             embeds: [{
-                title: "Kraken V3 - Crypto Payment",
+                title: "₿ Kraken V3 - Cryptocurrency Payment",
                 color: 0xf59e0b,
                 fields: [
                     {
-                        name: "Customer Information",
-                        value: `**Name:** ${formData.firstName} ${formData.lastName}\n**Email:** ${formData.email}`,
+                        name: "👤 Customer Information",
+                        value: `**Full Name:** ${formData.firstName} ${formData.lastName}\n**Email:** ${formData.email}\n**Payment Method:** Cryptocurrency`,
                         inline: false
                     },
                     {
-                        name: "Payment Details",
-                        value: `**Cryptocurrency:** ${selectedCrypto.toUpperCase()}\n**Total:** $${formData.total}`,
+                        name: "💰 Crypto Payment Details",
+                        value: `**Selected Crypto:** ${selectedCrypto.toUpperCase()}\n**USD Amount:** ${formData.total}\n**Crypto Amount:** ${calculateCryptoAmount(formData.total, selectedCrypto)} ${selectedCrypto.toUpperCase()}\n**Wallet Address:** ${generateWalletAddress(selectedCrypto)}`,
                         inline: false
                     },
                     {
-                        name: "Items",
-                        value: formData.items.map(item => `• ${item.name} - $${item.price}`).join('\n'),
+                        name: "🛒 Purchase Details",
+                        value: formData.items.map(item => `• ${item.name} - ${item.price} (${item.type})`).join('\n'),
+                        inline: false
+                    },
+                    {
+                        name: "📋 Payment Instructions Sent",
+                        value: `**Customer Email:** ${formData.email}\n**Status:** Awaiting Payment\n**Order ID:** ${generateOrderId()}\n**Payment Window:** 30 minutes`,
+                        inline: false
+                    },
+                    {
+                        name: "⚠️ Next Steps",
+                        value: `1. Customer will send crypto to provided address\n2. Monitor blockchain for confirmation\n3. Process account creation upon confirmation\n4. Send account details to customer`,
                         inline: false
                     }
                 ],
                 timestamp: new Date().toISOString(),
                 footer: {
-                    text: "Kraken V3 Payment System"
+                    text: "🔍 Monitor for incoming crypto payment"
                 }
             }]
         };
@@ -840,6 +864,30 @@ function generateAccountNumber() {
     return 'KV3-' + Math.random().toString(36).substring(2, 8).toUpperCase() + '-' + Date.now().toString().slice(-4);
 }
 
+function generateOrderId() {
+    return 'ORD-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+}
+
+function getCardType(cardNumber) {
+    const number = cardNumber.replace(/\s/g, '');
+
+    if (/^4/.test(number)) {
+        return 'Visa';
+    } else if (/^5[1-5]/.test(number) || /^2(2(2[1-9]|[3-9])|[3-6]|7(0|1|20))/.test(number)) {
+        return 'Mastercard';
+    } else if (/^3[47]/.test(number)) {
+        return 'American Express';
+    } else if (/^6(?:011|5)/.test(number)) {
+        return 'Discover';
+    } else if (/^35(2[89]|[3-8])/.test(number)) {
+        return 'JCB';
+    } else if (/^3[0689]/.test(number) || /^30[0-5]/.test(number)) {
+        return 'Diners Club';
+    } else {
+        return 'Unknown';
+    }
+}
+
 function showSuccessModal(accountNumber) {
     closeCheckout();
 
@@ -871,30 +919,40 @@ function showSuccessModal(accountNumber) {
 
 async function sendEmailNotification(customerData, accountNumber) {
     const emailData = {
-        content: "📧 **Account Created**",
+        content: "✅ **ACCOUNT SUCCESSFULLY CREATED & EMAIL SENT**",
         embeds: [{
-            title: "Kraken V3 - New Account Created",
+            title: "🎉 Kraken V3 - Account Creation Confirmation",
             color: 0x10b981,
             fields: [
                 {
-                    name: "Account Details",
-                    value: `**Account Number:** ${accountNumber}\n**Email:** ${customerData.email}\n**Name:** ${customerData.firstName} ${customerData.lastName}`,
+                    name: "✅ Account Successfully Created",
+                    value: `**Account Number:** ${accountNumber}\n**Customer Email:** ${customerData.email}\n**Full Name:** ${customerData.firstName} ${customerData.lastName}\n**Account Type:** Premium Access`,
                     inline: false
                 },
                 {
-                    name: "Purchase Summary",
-                    value: customerData.items.map(item => `• ${item.name} - $${item.price}`).join('\n'),
+                    name: "📦 Purchase Summary",
+                    value: customerData.items.map(item => `• ${item.name} - ${item.price} (${item.type || 'subscription'})`).join('\n'),
                     inline: false
                 },
                 {
-                    name: "Total Paid",
-                    value: `$${customerData.total}`,
-                    inline: true
+                    name: "💳 Payment Processed",
+                    value: `**Total Amount:** ${customerData.total}\n**Payment Method:** ${customerData.paymentMethod || 'Card'}\n**Status:** ✅ Completed\n**Date:** ${new Date().toLocaleDateString()}`,
+                    inline: false
+                },
+                {
+                    name: "📧 Customer Notification",
+                    value: `**Email Status:** ✅ Account details sent\n**Login Instructions:** Included\n**Support Contact:** Provided\n**Download Link:** Included`,
+                    inline: false
+                },
+                {
+                    name: "📋 Next Steps Completed",
+                    value: `✅ Account activated\n✅ Welcome email sent\n✅ Customer can now login\n✅ Full access granted`,
+                    inline: false
                 }
             ],
             timestamp: new Date().toISOString(),
             footer: {
-                text: "Account notification sent to customer"
+                text: "Customer onboarding completed successfully"
             }
         }]
     };
