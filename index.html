@@ -130,38 +130,50 @@
             <h2 class="section-title">See Kraken V3 in Action</h2>
             <p class="section-description">Watch real demonstrations of our tool in action</p>
 
-            <div class="demo-grid">
-                <div class="demo-card">
-                    <div class="demo-video" onclick="requestDemo('auto-comment')">
-                        <i class="fas fa-play"></i>
-                        <span>Click to Request Demo</span>
+            <div class="demo-container">
+                <div class="main-demo">
+                    <!-- OPTION 1: YouTube Video (Replace YOUR_VIDEO_ID with your actual video ID) -->
+                    <div class="demo-video-player">
+                        <iframe src="https://www.youtube.com/embed/YOUR_VIDEO_ID"
+                                frameborder="0"
+                                allowfullscreen
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
+                        </iframe>
                     </div>
-                    <h3>Auto Comment Features</h3>
-                    <p>See how Kraken V3 automatically posts engaging comments on target videos</p>
-                </div>
-                <div class="demo-card">
-                    <div class="demo-video" onclick="requestDemo('analytics')">
-                        <i class="fas fa-play"></i>
-                        <span>Click to Request Demo</span>
+
+                    <!-- OPTION 2: Local MP4 Video (Uncomment and comment out YouTube above to use this)
+                    <div class="demo-video-player">
+                        <video controls poster="images/demo-thumbnail.jpg">
+                            <source src="videos/kraken-v3-demo.mp4" type="video/mp4">
+                            <source src="videos/kraken-v3-demo.webm" type="video/webm">
+                            Your browser does not support the video tag.
+                        </video>
                     </div>
-                    <h3>Analytics Dashboard</h3>
-                    <p>Real-time tracking of your comment performance and engagement metrics</p>
-                </div>
-                <div class="demo-card">
-                    <div class="demo-video" onclick="requestDemo('speed-test')">
-                        <i class="fas fa-play"></i>
-                        <span>Click to Request Demo</span>
+                    -->
+
+                    <div class="demo-info">
+                        <h3>Complete Kraken V3 Demonstration</h3>
+                        <p>See all features in action: auto-commenting, analytics dashboard, targeting setup, and speed tests. Watch how Kraken V3 can transform your YouTube engagement strategy.</p>
+
+                        <div class="demo-features">
+                            <div class="demo-feature">
+                                <i class="fas fa-comment"></i>
+                                <span>Auto Comment System</span>
+                            </div>
+                            <div class="demo-feature">
+                                <i class="fas fa-chart-line"></i>
+                                <span>Real-time Analytics</span>
+                            </div>
+                            <div class="demo-feature">
+                                <i class="fas fa-target"></i>
+                                <span>Smart Targeting</span>
+                            </div>
+                            <div class="demo-feature">
+                                <i class="fas fa-bolt"></i>
+                                <span>Lightning Speed</span>
+                            </div>
+                        </div>
                     </div>
-                    <h3>Speed Test</h3>
-                    <p>Watch Kraken V3 process 1000+ comments in under 30 seconds</p>
-                </div>
-                <div class="demo-card">
-                    <div class="demo-video" onclick="requestDemo('targeting')">
-                        <i class="fas fa-play"></i>
-                        <span>Click to Request Demo</span>
-                    </div>
-                    <h3>Targeting Setup</h3>
-                    <p>Learn how to set up smart targeting for maximum engagement</p>
                 </div>
             </div>
 
