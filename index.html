@@ -4,73 +4,69 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kraken V3 - Ultimate YouTube Comment Tool</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://ext.same-assets.com/414119277/890932711.woff2" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-brand">
-                <i class="fas fa-star brand-icon"></i>
-                <span class="brand-text">Kraken V3</span>
+                <i class="fas fa-star"></i>
+                <span>Kraken V3</span>
             </div>
             <ul class="nav-menu">
-                <li><a href="#features" class="nav-link">Features</a></li>
-                <li><a href="#reviews" class="nav-link">Reviews</a></li>
-                <li><a href="#download" class="nav-link">Download</a></li>
-                <li><a href="#pricing" class="nav-link">Pricing</a></li>
-                <li><a href="#discord" class="nav-link">Discord</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#reviews">Reviews</a></li>
+                <li><a href="#demo">Demo</a></li>
+                <li><a href="#pricing">Pricing</a></li>
+                <li><a href="#discord">Discord</a></li>
             </ul>
-            <div class="cart-icon" onclick="openCart()">
+            <div class="nav-cart">
                 <i class="fas fa-shopping-cart"></i>
                 <span class="cart-count">0</span>
-            </div>
-            <div class="hamburger">
-                <span></span>
-                <span></span>
-                <span></span>
             </div>
         </div>
     </nav>
 
     <!-- Hero Section -->
     <section class="hero">
-        <div class="hero-bg">
-            <div class="floating-particles"></div>
-        </div>
-        <div class="hero-container">
-            <div class="hero-content">
-                <h1 class="hero-title">
-                    <span class="gradient-text">Kraken V3</span>
-                </h1>
-                <p class="hero-subtitle">The Ultimate YouTube Comment Tool</p>
-                <p class="hero-description">
-                    Automate, manage, and boost your YouTube engagement with lightning-fast precision
-                </p>
-                <div class="hero-buttons">
-                    <button class="btn btn-primary pulse">
-                        <i class="fas fa-rocket"></i>
-                        Get Started - $5/month
-                    </button>
-                    <button class="btn btn-secondary">
-                        <i class="fab fa-discord"></i>
-                        Join Discord
-                    </button>
-                </div>
+        <div class="container">
+            <h1 class="hero-title">Kraken V3</h1>
+            <h2 class="hero-subtitle">The Ultimate YouTube Comment Tool</h2>
+            <p class="hero-description">
+                Automate, manage, and boost your YouTube engagement with lightning-fast precision
+            </p>
+            <div class="hero-buttons">
+                <a href="https://discord.gg/your-discord-invite" class="btn btn-primary" target="_blank" rel="noopener">
+                    <i class="fas fa-rocket"></i>
+                    Get Started - $5/month
+                </a>
+                <a href="https://discord.gg/your-discord-invite" class="btn btn-secondary" target="_blank" rel="noopener">
+                    <i class="fab fa-discord"></i>
+                    Join Discord
+                </a>
             </div>
-            <div class="hero-stats">
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="container">
+            <div class="stats-grid">
                 <div class="stat-item">
-                    <div class="stat-number" data-count="50000">0</div>
+                    <div class="stat-number">50,000</div>
                     <div class="stat-label">Comments Automated</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number" data-count="2500">0</div>
+                    <div class="stat-number">2,500</div>
                     <div class="stat-label">Active Users</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number" data-count="99">0</div>
+                    <div class="stat-number">99</div>
                     <div class="stat-label">Uptime %</div>
                 </div>
             </div>
@@ -82,42 +78,42 @@
         <div class="container">
             <h2 class="section-title">Why Choose Kraken V3?</h2>
             <div class="features-grid">
-                <div class="feature-card" data-aos="fade-up">
+                <div class="feature-card">
                     <div class="feature-icon">
                         <i class="fas fa-bolt"></i>
                     </div>
                     <h3>Lightning Fast</h3>
                     <p>Process thousands of comments in seconds with our optimized algorithms</p>
                 </div>
-                <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+                <div class="feature-card">
                     <div class="feature-icon">
                         <i class="fas fa-mouse-pointer"></i>
                     </div>
                     <h3>Easy to Use</h3>
                     <p>Simple, intuitive interface that gets you started in under 2 minutes</p>
                 </div>
-                <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+                <div class="feature-card">
                     <div class="feature-icon">
                         <i class="fas fa-shield-alt"></i>
                     </div>
                     <h3>Safe & Reliable</h3>
                     <p>Built with YouTube's guidelines in mind, ensuring your account stays secure</p>
                 </div>
-                <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
+                <div class="feature-card">
                     <div class="feature-icon">
                         <i class="fas fa-cogs"></i>
                     </div>
                     <h3>Advanced Automation</h3>
                     <p>Smart filters, custom templates, and scheduled posting capabilities</p>
                 </div>
-                <div class="feature-card" data-aos="fade-up" data-aos-delay="400">
+                <div class="feature-card">
                     <div class="feature-icon">
                         <i class="fas fa-chart-line"></i>
                     </div>
                     <h3>Analytics Dashboard</h3>
                     <p>Track your engagement growth with detailed analytics and insights</p>
                 </div>
-                <div class="feature-card" data-aos="fade-up" data-aos-delay="500">
+                <div class="feature-card">
                     <div class="feature-icon">
                         <i class="fas fa-users"></i>
                     </div>
@@ -128,11 +124,61 @@
         </div>
     </section>
 
+    <!-- Demo Section -->
+    <section id="demo" class="demo-section">
+        <div class="container">
+            <h2 class="section-title">See Kraken V3 in Action</h2>
+            <p class="section-description">Watch real demonstrations of our tool in action</p>
+
+            <div class="demo-grid">
+                <div class="demo-card">
+                    <div class="demo-video" onclick="requestDemo('auto-comment')">
+                        <i class="fas fa-play"></i>
+                        <span>Click to Request Demo</span>
+                    </div>
+                    <h3>Auto Comment Features</h3>
+                    <p>See how Kraken V3 automatically posts engaging comments on target videos</p>
+                </div>
+                <div class="demo-card">
+                    <div class="demo-video" onclick="requestDemo('analytics')">
+                        <i class="fas fa-play"></i>
+                        <span>Click to Request Demo</span>
+                    </div>
+                    <h3>Analytics Dashboard</h3>
+                    <p>Real-time tracking of your comment performance and engagement metrics</p>
+                </div>
+                <div class="demo-card">
+                    <div class="demo-video" onclick="requestDemo('speed-test')">
+                        <i class="fas fa-play"></i>
+                        <span>Click to Request Demo</span>
+                    </div>
+                    <h3>Speed Test</h3>
+                    <p>Watch Kraken V3 process 1000+ comments in under 30 seconds</p>
+                </div>
+                <div class="demo-card">
+                    <div class="demo-video" onclick="requestDemo('targeting')">
+                        <i class="fas fa-play"></i>
+                        <span>Click to Request Demo</span>
+                    </div>
+                    <h3>Targeting Setup</h3>
+                    <p>Learn how to set up smart targeting for maximum engagement</p>
+                </div>
+            </div>
+
+            <div class="demo-cta">
+                <a href="https://discord.gg/your-discord-invite" class="btn btn-primary" target="_blank" rel="noopener">
+                    <i class="fas fa-video"></i>
+                    Request Live Demo in Discord
+                </a>
+            </div>
+        </div>
+    </section>
+
     <!-- Reviews Section -->
     <section id="reviews" class="reviews">
         <div class="container">
             <h2 class="section-title">What Our Users Say</h2>
-            <div class="reviews-carousel">
+            <div class="reviews-slider">
                 <div class="review-card active">
                     <div class="stars">
                         <i class="fas fa-star"></i>
@@ -141,7 +187,7 @@
                         <i class="fas fa-star"></i>
                         <i class="fas fa-star"></i>
                     </div>
-                    <p>"Kraken V3 transformed my YouTube strategy. I save 3 hours daily!"</p>
+                    <p class="review-text">"Kraken V3 transformed my YouTube strategy. I save 3 hours daily!"</p>
                     <div class="reviewer">
                         <strong>Sarah M.</strong>
                         <span>Content Creator</span>
@@ -155,7 +201,7 @@
                         <i class="fas fa-star"></i>
                         <i class="fas fa-star"></i>
                     </div>
-                    <p>"Fastest comment tool I've ever used. The UI is incredibly intuitive."</p>
+                    <p class="review-text">"Fastest comment tool I've ever used. The UI is incredibly intuitive."</p>
                     <div class="reviewer">
                         <strong>Mike R.</strong>
                         <span>Digital Marketer</span>
@@ -169,16 +215,16 @@
                         <i class="fas fa-star"></i>
                         <i class="fas fa-star"></i>
                     </div>
-                    <p>"Amazing tool! My engagement rates increased by 400% in just one month."</p>
+                    <p class="review-text">"Amazing tool! My engagement rates increased by 400% in just one month."</p>
                     <div class="reviewer">
                         <strong>Alex K.</strong>
                         <span>YouTuber</span>
                     </div>
                 </div>
             </div>
-            <div class="carousel-controls">
-                <button class="carousel-btn prev"><i class="fas fa-chevron-left"></i></button>
-                <button class="carousel-btn next"><i class="fas fa-chevron-right"></i></button>
+            <div class="review-nav">
+                <button class="review-prev"><i class="fas fa-chevron-left"></i></button>
+                <button class="review-next"><i class="fas fa-chevron-right"></i></button>
             </div>
         </div>
     </section>
@@ -188,28 +234,26 @@
         <div class="container">
             <h2 class="section-title">Choose Your Plan</h2>
             <div class="pricing-toggle">
-                <span class="toggle-label">Monthly</span>
-                <label class="switch">
-                    <input type="checkbox" id="yearlyToggle">
+                <span class="toggle-monthly">Monthly</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="yearly-toggle">
                     <span class="slider"></span>
                 </label>
-                <span class="toggle-label">Yearly <span class="discount">Save 20%</span></span>
+                <span class="toggle-yearly">Yearly <span class="save-badge">Save 20%</span></span>
             </div>
 
             <div class="pricing-grid">
                 <!-- Starter Plan -->
-                <div class="pricing-card" data-aos="fade-up">
-                    <div class="plan-header">
-                        <h3>Starter</h3>
-                        <div class="price">
-                            <span class="currency">$</span>
-                            <span class="amount monthly">5</span>
-                            <span class="amount yearly">4</span>
-                            <span class="period">/month</span>
-                        </div>
-                        <p class="plan-description">Perfect for beginners</p>
+                <div class="pricing-card">
+                    <h3>Starter</h3>
+                    <div class="price">
+                        <span class="currency">$</span>
+                        <span class="amount monthly-price">5</span>
+                        <span class="amount yearly-price" style="display: none;">4</span>
+                        <span class="period">/month</span>
                     </div>
-                    <ul class="plan-features">
+                    <p class="plan-description">Perfect for beginners</p>
+                    <ul class="features-list">
                         <li><i class="fas fa-check"></i> 1,000 comments/month</li>
                         <li><i class="fas fa-check"></i> Basic filtering options</li>
                         <li><i class="fas fa-check"></i> 5 custom templates</li>
@@ -217,23 +261,24 @@
                         <li><i class="fas fa-times"></i> Scheduled posting</li>
                         <li><i class="fas fa-times"></i> Priority support</li>
                     </ul>
-                    <button class="btn btn-outline" onclick="addToCart('starter', 'Starter Plan', 5, 'monthly')">Add to Cart</button>
+                    <a href="https://discord.gg/your-discord-invite" class="btn btn-outline" target="_blank" rel="noopener">
+                        <i class="fab fa-discord"></i>
+                        Join Discord
+                    </a>
                 </div>
 
-                <!-- Pro Plan (Popular) -->
-                <div class="pricing-card popular" data-aos="fade-up" data-aos-delay="100">
+                <!-- Pro Plan -->
+                <div class="pricing-card popular">
                     <div class="popular-badge">Most Popular</div>
-                    <div class="plan-header">
-                        <h3>Pro</h3>
-                        <div class="price">
-                            <span class="currency">$</span>
-                            <span class="amount monthly">15</span>
-                            <span class="amount yearly">12</span>
-                            <span class="period">/month</span>
-                        </div>
-                        <p class="plan-description">Best for growing channels</p>
+                    <h3>Pro</h3>
+                    <div class="price">
+                        <span class="currency">$</span>
+                        <span class="amount monthly-price">15</span>
+                        <span class="amount yearly-price" style="display: none;">12</span>
+                        <span class="period">/month</span>
                     </div>
-                    <ul class="plan-features">
+                    <p class="plan-description">Best for growing channels</p>
+                    <ul class="features-list">
                         <li><i class="fas fa-check"></i> Unlimited comments</li>
                         <li><i class="fas fa-check"></i> Advanced filtering</li>
                         <li><i class="fas fa-check"></i> Unlimited templates</li>
@@ -241,22 +286,23 @@
                         <li><i class="fas fa-check"></i> Priority support</li>
                         <li><i class="fas fa-check"></i> Discord access</li>
                     </ul>
-                    <button class="btn btn-primary" onclick="addToCart('pro', 'Pro Plan', 15, 'monthly')">Add to Cart</button>
+                    <a href="https://discord.gg/your-discord-invite" class="btn btn-primary" target="_blank" rel="noopener">
+                        <i class="fab fa-discord"></i>
+                        Join Discord
+                    </a>
                 </div>
 
                 <!-- Enterprise Plan -->
-                <div class="pricing-card" data-aos="fade-up" data-aos-delay="200">
-                    <div class="plan-header">
-                        <h3>Enterprise</h3>
-                        <div class="price">
-                            <span class="currency">$</span>
-                            <span class="amount monthly">50</span>
-                            <span class="amount yearly">40</span>
-                            <span class="period">/month</span>
-                        </div>
-                        <p class="plan-description">For large teams</p>
+                <div class="pricing-card">
+                    <h3>Enterprise</h3>
+                    <div class="price">
+                        <span class="currency">$</span>
+                        <span class="amount monthly-price">50</span>
+                        <span class="amount yearly-price" style="display: none;">40</span>
+                        <span class="period">/month</span>
                     </div>
-                    <ul class="plan-features">
+                    <p class="plan-description">For large teams</p>
+                    <ul class="features-list">
                         <li><i class="fas fa-check"></i> Everything in Pro</li>
                         <li><i class="fas fa-check"></i> Multiple accounts</li>
                         <li><i class="fas fa-check"></i> Team management</li>
@@ -264,91 +310,90 @@
                         <li><i class="fas fa-check"></i> Dedicated support</li>
                         <li><i class="fas fa-check"></i> Custom integrations</li>
                     </ul>
-                    <button class="btn btn-outline" onclick="addToCart('enterprise', 'Enterprise Plan', 50, 'monthly')">Add to Cart</button>
+                    <a href="https://discord.gg/your-discord-invite" class="btn btn-outline" target="_blank" rel="noopener">
+                        <i class="fab fa-discord"></i>
+                        Join Discord
+                    </a>
                 </div>
             </div>
 
-            <!-- Lifetime Deal -->
-            <div class="lifetime-deal" data-aos="fade-up" data-aos-delay="300">
-                <div class="deal-content">
-                    <div class="deal-badge">🔥 Limited Time Offer</div>
-                    <h3>Lifetime Access</h3>
-                    <p>Pay once, use forever! Get all Pro features with no monthly fees.</p>
-                    <div class="deal-price">
-                        <span class="original-price">$180</span>
-                        <span class="deal-price-amount">$120</span>
-                        <span class="savings">Save $60</span>
-                    </div>
-                    <button class="btn btn-gradient" onclick="addToCart('lifetime', 'Lifetime Access', 120, 'lifetime')">
-                        <i class="fas fa-crown"></i>
-                        Add to Cart
-                    </button>
+            <!-- Lifetime Offer -->
+            <div class="lifetime-offer">
+                <div class="offer-badge">Limited Time Offer</div>
+                <h3>Lifetime Access</h3>
+                <p>Pay once, use forever! Get all Pro features with no monthly fees.</p>
+                <div class="lifetime-price">
+                    <span class="original-price">$180</span>
+                    <span class="discounted-price">$120</span>
+                    <span class="save-amount">Save $60</span>
                 </div>
+                <a href="https://discord.gg/your-discord-invite" class="btn btn-primary btn-large" target="_blank" rel="noopener">
+                    <i class="fab fa-discord"></i>
+                    Join Discord
+                </a>
             </div>
         </div>
     </section>
 
     <!-- Download Section -->
-    <section id="download" class="download">
+    <section class="download">
         <div class="container">
             <h2 class="section-title">Download Kraken V3</h2>
-            <div class="download-grid">
-                <div class="download-card" data-aos="fade-right">
+            <div class="download-content">
+                <div class="download-info">
                     <div class="download-icon">
                         <i class="fab fa-windows"></i>
                     </div>
                     <h3>Windows Desktop App</h3>
                     <p>Get the full Kraken V3 experience with our powerful desktop application</p>
-                    <button class="btn btn-primary">
+                    <a href="https://discord.gg/your-discord-invite" class="btn btn-primary" target="_blank" rel="noopener">
                         <i class="fas fa-download"></i>
-                        Download for Windows
-                    </button>
+                        Get Download Link in Discord
+                    </a>
                 </div>
-                <div class="download-notice" data-aos="fade-left">
+                <div class="download-notice">
                     <div class="notice-header">
                         <i class="fas fa-info-circle"></i>
                         <h4>Important Notice</h4>
                     </div>
                     <h5>Free Download ≠ Free Usage</h5>
                     <p>While the application download is free, you'll need an active subscription to use Kraken V3. The app will prompt you for your account credentials upon first launch.</p>
-                    <ul class="notice-list">
-                        <li><i class="fas fa-check text-green"></i> Free to download and install</li>
-                        <li><i class="fas fa-check text-green"></i> No malware or hidden software</li>
-                        <li><i class="fas fa-exclamation-triangle text-yellow"></i> Requires paid subscription</li>
-                        <li><i class="fas fa-exclamation-triangle text-yellow"></i> Account verification needed</li>
+                    <ul>
+                        <li><i class="fas fa-check"></i> Free to download and install</li>
+                        <li><i class="fas fa-check"></i> No malware or hidden software</li>
+                        <li><i class="fas fa-exclamation-triangle"></i> Requires paid subscription</li>
+                        <li><i class="fas fa-exclamation-triangle"></i> Account verification needed</li>
                     </ul>
-                    <div class="notice-footer">
-                        <p>You can purchase a subscription in the pricing section above.</p>
-                    </div>
+                    <p>You can purchase a subscription by joining our Discord server below.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Discord Section -->
-    <section id="discord" class="discord">
+    <!-- Community Section -->
+    <section id="discord" class="community">
         <div class="container">
-            <div class="discord-content" data-aos="zoom-in">
-                <div class="discord-icon">
-                    <i class="fab fa-discord"></i>
-                </div>
-                <h2>Join Our Community</h2>
-                <p>Connect with other Kraken V3 users, get support, and stay updated with the latest features</p>
-                <div class="community-stats">
-                    <div class="stat">
-                        <div class="stat-number">2,500+</div>
-                        <div class="stat-label">Active Members</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-number">24/7</div>
-                        <div class="stat-label">Support Available</div>
-                    </div>
-                </div>
-                <button class="btn btn-discord">
-                    <i class="fab fa-discord"></i>
-                    Join Discord Server
-                </button>
+            <div class="community-icon">
+                <i class="fab fa-discord"></i>
             </div>
+            <h2 class="section-title">Join Our Community</h2>
+            <p class="section-description">Connect with other Kraken V3 users, get support, and stay updated with the latest features</p>
+
+            <div class="community-stats">
+                <div class="stat-item">
+                    <div class="stat-number">2,500+</div>
+                    <div class="stat-label">Active Members</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Support Available</div>
+                </div>
+            </div>
+
+            <a href="https://discord.gg/your-discord-invite" class="btn btn-primary btn-large" target="_blank" rel="noopener">
+                <i class="fab fa-discord"></i>
+                Join Discord Server
+            </a>
         </div>
     </section>
 
@@ -360,198 +405,47 @@
                     <i class="fas fa-star"></i>
                     <span>Kraken V3</span>
                 </div>
-                <div class="footer-links">
-                    <a href="#privacy">Privacy Policy</a>
-                    <a href="#terms">Terms of Service</a>
-                    <a href="#support">Support</a>
+                <div class="footer-section">
+                    <h4>How to Buy</h4>
+                    <ol>
+                        <li>Join our Discord server</li>
+                        <li>Create a ticket in #support</li>
+                        <li>Tell us your payment method</li>
+                        <li>Specify which plan you want</li>
+                        <li>Get instant access!</li>
+                    </ol>
+                </div>
+                <div class="footer-section">
+                    <h4>Payment Methods</h4>
+                    <ul>
+                        <li><i class="fas fa-credit-card"></i> Credit/Debit Cards</li>
+                        <li><i class="fab fa-bitcoin"></i> Bitcoin (BTC)</li>
+                        <li><i class="fab fa-ethereum"></i> Ethereum (ETH)</li>
+                        <li><i class="fas fa-coins"></i> USDT</li>
+                        <li><i class="fab fa-paypal"></i> PayPal</li>
+                        <li><i class="fas fa-university"></i> Bank Transfer</li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><i class="fab fa-discord"></i> Discord #support</li>
+                        <li><i class="fas fa-clock"></i> 24/7 Response</li>
+                        <li><i class="fas fa-video"></i> Live Demos</li>
+                        <li><i class="fas fa-book"></i> Full Documentation</li>
+                    </ul>
                 </div>
             </div>
             <div class="footer-bottom">
+                <div class="footer-links">
+                    <a href="#privacy">Privacy Policy</a>
+                    <a href="#terms">Terms of Service</a>
+                    <a href="https://discord.gg/your-discord-invite" target="_blank" rel="noopener">Support</a>
+                </div>
                 <p>&copy; 2024 Kraken V3. All rights reserved.</p>
             </div>
         </div>
     </footer>
-
-    <!-- Cart Modal -->
-    <div id="cartModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Shopping Cart</h2>
-                <span class="close" onclick="closeCart()">&times;</span>
-            </div>
-            <div id="cartItems" class="cart-items">
-                <p class="empty-cart">Your cart is empty</p>
-            </div>
-            <div id="cartTotal" class="cart-total" style="display: none;">
-                <div class="total-row">
-                    <span>Total: $<span id="totalAmount">0</span></span>
-                </div>
-                <button class="btn btn-primary" onclick="proceedToCheckout()">
-                    <i class="fas fa-credit-card"></i>
-                    Proceed to Checkout
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Checkout Modal -->
-    <div id="checkoutModal" class="modal">
-        <div class="modal-content checkout-modal">
-            <div class="modal-header">
-                <h2>Checkout</h2>
-                <span class="close" onclick="closeCheckout()">&times;</span>
-            </div>
-
-            <div class="checkout-content">
-                <div class="order-summary">
-                    <h3>Order Summary</h3>
-                    <div id="checkoutItems"></div>
-                    <div class="checkout-total">
-                        <strong>Total: $<span id="checkoutTotal">0</span></strong>
-                    </div>
-                </div>
-
-                <div class="payment-section">
-                    <h3>Payment Method</h3>
-                    <div class="payment-tabs">
-                        <button class="payment-tab active" onclick="showPaymentMethod('card')">
-                            <i class="fas fa-credit-card"></i>
-                            Credit Card
-                        </button>
-                        <button class="payment-tab" onclick="showPaymentMethod('crypto')">
-                            <i class="fab fa-bitcoin"></i>
-                            Crypto
-                        </button>
-                    </div>
-
-                    <!-- Card Payment Form -->
-                    <div id="cardPayment" class="payment-form active">
-                        <form id="cardForm">
-                            <div class="form-group">
-                                <label>Email Address</label>
-                                <input type="email" id="email" required>
-                            </div>
-
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>First Name</label>
-                                    <input type="text" id="firstName" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>Last Name</label>
-                                    <input type="text" id="lastName" required>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Card Number</label>
-                                <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" required>
-                            </div>
-
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>Expiry Date</label>
-                                    <input type="text" id="expiryDate" placeholder="MM/YY" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>CVV</label>
-                                    <input type="text" id="cvv" placeholder="123" required>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Billing Address</label>
-                                <input type="text" id="address" placeholder="Street Address" required>
-                            </div>
-
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>City</label>
-                                    <input type="text" id="city" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>ZIP Code</label>
-                                    <input type="text" id="zipCode" required>
-                                </div>
-                            </div>
-
-                            <button type="submit" class="btn btn-primary btn-full">
-                                <i class="fas fa-lock"></i>
-                                Complete Payment
-                            </button>
-                        </form>
-                    </div>
-
-                    <!-- Crypto Payment Form -->
-                    <div id="cryptoPayment" class="payment-form">
-                        <div class="crypto-options">
-                            <div class="crypto-option">
-                                <input type="radio" id="bitcoin" name="crypto" value="bitcoin" checked>
-                                <label for="bitcoin">
-                                    <i class="fab fa-bitcoin"></i>
-                                    Bitcoin (BTC)
-                                </label>
-                            </div>
-                            <div class="crypto-option">
-                                <input type="radio" id="ethereum" name="crypto" value="ethereum">
-                                <label for="ethereum">
-                                    <i class="fab fa-ethereum"></i>
-                                    Ethereum (ETH)
-                                </label>
-                            </div>
-                            <div class="crypto-option">
-                                <input type="radio" id="usdt" name="crypto" value="usdt">
-                                <label for="usdt">
-                                    <i class="fas fa-dollar-sign"></i>
-                                    USDT
-                                </label>
-                            </div>
-                        </div>
-
-                        <form id="cryptoForm">
-                            <div class="form-group">
-                                <label>Email Address</label>
-                                <input type="email" id="cryptoEmail" required>
-                            </div>
-
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>First Name</label>
-                                    <input type="text" id="cryptoFirstName" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>Last Name</label>
-                                    <input type="text" id="cryptoLastName" required>
-                                </div>
-                            </div>
-
-                            <div class="crypto-payment-info">
-                                <p>After clicking "Generate Payment", you'll receive a unique wallet address to send your payment to.</p>
-                            </div>
-
-                            <button type="submit" class="btn btn-primary btn-full">
-                                <i class="fab fa-bitcoin"></i>
-                                Generate Crypto Payment
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Success Modal -->
-    <div id="successModal" class="modal">
-        <div class="modal-content success-modal">
-            <div class="success-icon">
-                <i class="fas fa-check-circle"></i>
-            </div>
-            <h2>Payment Successful!</h2>
-            <p>Thank you for your purchase. Your account details have been sent to your email.</p>
-            <p><strong>Account Number:</strong> <span id="accountNumber"></span></p>
-            <button class="btn btn-primary" onclick="closeSuccess()">Continue</button>
-        </div>
-    </div>
 
     <script src="script.js"></script>
 </body>
