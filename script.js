@@ -99,7 +99,7 @@ function initializeDemoRequests() {
 }
 
 function requestDemo(demoType) {
-    const discordURL = 'https://discord.gg/your-discord-invite';
+    const discordURL = 'https://discord.gg/3kYtUGnd';
     const message = `Hi! I'd like to request a live demo of: ${demoType}`;
 
     // Create a notification
@@ -243,7 +243,7 @@ function toggleMobileMenu() {
 // Utility function to get Discord invite link
 function getDiscordInvite() {
     // You can replace this with your actual Discord invite link
-    return 'https://discord.gg/your-discord-invite';
+    return 'https://discord.gg/3kYtUGnd';
 }
 
 // Handle form submissions (redirect to Discord)
