@@ -12,7 +12,6 @@ const firebaseConfig = {
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
 const database = firebase.database();
 
 // DOM Elements
@@ -58,7 +57,7 @@ const defaultGames = [
 ];
 
 // State
-let currentUser = null;
+let currentUser = null; // {email, username}
 let isLogin = true;
 let games = [];
 let filteredGames = [];
@@ -77,18 +76,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // App Initialization
 function initializeApp() {
-    // Check auth state
-    auth.onAuthStateChanged((user) => {
-        if (user) {
-            currentUser = user;
-            showMainApp();
-            loadUserData();
-            loadGames();
-        } else {
-            currentUser = null;
-            showAuthModal();
-        }
-    });
+    // Check if user info is stored in localStorage
+    const storedUser = localStorage.getItem('currentUser');
+    if (storedUser) {
+        currentUser = JSON.parse(storedUser);
+        showMainApp();
+        loadGames();
+        updateUsernameDisplay();
+    } else {
+        showAuthModal();
+    }
 }
 
 // Event Listeners
@@ -180,71 +177,112 @@ function switchAuthTab(tab) {
 function handleAuth(e) {
     e.preventDefault();
 
-    const email = document.getElementById('email').value;
+    const email = document.getElementById('email').value.trim().toLowerCase();
     const password = document.getElementById('password').value;
-    const username = document.getElementById('username').value;
+    const username = document.getElementById('username').value.trim();
 
     hideError();
 
-    if (isLogin) {
-        // Login
-        auth.signInWithEmailAndPassword(email, password)
-            .then((userCredential) => {
-                console.log('Login successful');
-            })
-            .catch((error) => {
-                showError(error.message);
-            });
-    } else {
-        // Sign up
-        if (!username.trim()) {
-            showError('Username is required');
-            return;
-        }
+    if (!email || !password || (!isLogin && !username)) {
+        showError('Please fill in all required fields.');
+        return;
+    }
 
-        auth.createUserWithEmailAndPassword(email, password)
-            .then((userCredential) => {
-                // Save user data
-                const user = userCredential.user;
-                return database.ref('users/' + user.uid).set({
+    if (isLogin) {
+        // Login: check users in database
+        database.ref('users').orderByChild('email').equalTo(email).once('value')
+            .then(snapshot => {
+                if (!snapshot.exists()) {
+                    showError('User not found.');
+                    return;
+                }
+
+                let userData = null;
+                snapshot.forEach(childSnap => {
+                    const val = childSnap.val();
+                    if (val.email === email) {
+                        userData = val;
+                    }
+                });
+
+                if (!userData) {
+                    showError('User not found.');
+                    return;
+                }
+
+                if (userData.password !== password) {
+                    showError('Incorrect password.');
+                    return;
+                }
+
+                // Successful login
+                currentUser = {
+                    email: userData.email,
+                    username: userData.username
+                };
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                showMainApp();
+                loadGames();
+                updateUsernameDisplay();
+
+                // Reset form
+                authForm.reset();
+            })
+            .catch(err => {
+                showError('Login failed: ' + err.message);
+            });
+
+    } else {
+        // Sign up: check if email already exists
+        database.ref('users').orderByChild('email').equalTo(email).once('value')
+            .then(snapshot => {
+                if (snapshot.exists()) {
+                    showError('Email is already registered.');
+                    return;
+                }
+
+                // Save new user in database
+                const newUser = {
                     username: username,
                     email: email,
+                    password: password,
                     createdAt: Date.now()
-                });
+                };
+
+                database.ref('users').push(newUser)
+                    .then(() => {
+                        currentUser = {
+                            email: newUser.email,
+                            username: newUser.username
+                        };
+                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                        showMainApp();
+                        loadGames();
+                        updateUsernameDisplay();
+
+                        // Reset form
+                        authForm.reset();
+                    })
+                    .catch(err => {
+                        showError('Sign up failed: ' + err.message);
+                    });
             })
-            .then(() => {
-                console.log('Sign up successful');
-            })
-            .catch((error) => {
-                showError(error.message);
+            .catch(err => {
+                showError('Sign up failed: ' + err.message);
             });
     }
 }
 
 function handleLogout() {
-    auth.signOut().then(() => {
-        console.log('Logout successful');
-    }).catch((error) => {
-        console.error('Logout error:', error);
-    });
+    currentUser = null;
+    localStorage.removeItem('currentUser');
+    showAuthModal();
+    clearSearch();
 }
 
-function loadUserData() {
-    if (!currentUser) return;
-
-    database.ref('users/' + currentUser.uid).once('value')
-        .then((snapshot) => {
-            const userData = snapshot.val();
-            if (userData) {
-                usernameDisplay.textContent = userData.username || currentUser.email;
-            } else {
-                usernameDisplay.textContent = currentUser.email;
-            }
-        })
-        .catch((error) => {
-            console.error('Error loading user data:', error);
-            usernameDisplay.textContent = currentUser.email;
-        });
+// Update username display in UI
+function updateUsernameDisplay() {
+    usernameDisplay.textContent = currentUser?.username || currentUser?.email || '';
 }
 
 // Error Handling
@@ -345,28 +383,19 @@ function handleAddGame(e) {
     const url = document.getElementById('game-url').value;
     const image = document.getElementById('game-image').value;
 
+    if (!currentUser) {
+        alert('You must be logged in to add games.');
+        return;
+    }
+
     const newGame = {
         name: name,
         url: url,
         image: image,
-        addedBy: currentUser.uid,
+        addedBy: currentUser.email,
         addedAt: Date.now()
     };
 
-    if (DEMO_MODE) {
-        // In demo mode, just add to local games array
-        newGame.id = Date.now().toString();
-        games.push(newGame);
-        renderGames();
-
-        // Reset form and close modal
-        addGameForm.reset();
-        hideModal(addGameModal);
-        console.log('Game added successfully (demo mode)');
-        return;
-    }
-
-    // Add to Firebase
     database.ref('games').push(newGame)
         .then(() => {
             // Reload games
@@ -445,6 +474,8 @@ document.addEventListener('mousemove', (e) => {
         if (distance < 200) {
             const intensity = (200 - distance) / 200;
             el.style.transform = `translateY(-${intensity * 5}px)`;
+        } else {
+            el.style.transform = '';
         }
     });
 });
