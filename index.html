@@ -94,7 +94,19 @@
 
             <!-- Games Grid -->
             <section class="games-section">
-                <h2 class="section-title">Popular Games</h2>
+                <h2 class="section-title">Games Library</h2>
+
+                <!-- Search Bar -->
+                <div class="search-container">
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="search-input" placeholder="Search games...">
+                        <button id="clear-search" class="clear-btn hidden">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+
                 <div class="games-grid" id="games-grid">
                     <!-- Games will be dynamically loaded here -->
                 </div>
@@ -136,18 +148,7 @@
                     <input type="url" id="game-image" placeholder="Image URL">
                 </div>
 
-                <div class="input-group">
-                    <label>Category</label>
-                    <select id="game-category" required>
-                        <option value="">Select Category</option>
-                        <option value="action">Action</option>
-                        <option value="adventure">Adventure</option>
-                        <option value="puzzle">Puzzle</option>
-                        <option value="racing">Racing</option>
-                        <option value="sports">Sports</option>
-                        <option value="strategy">Strategy</option>
-                    </select>
-                </div>
+
 
                 <button type="submit" class="submit-btn">
                     Add Game
