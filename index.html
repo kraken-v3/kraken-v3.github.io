@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nova Games Hub</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <div class="nova-logo">
+                <i class="fas fa-star"></i>
+                <span>NOVA</span>
+            </div>
+            <div class="loading-bar">
+                <div class="loading-progress"></div>
+            </div>
+            <p class="loading-text">Initializing Gaming Universe...</p>
+        </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="auth-container">
+                <div class="auth-header">
+                    <h2 id="auth-title">Welcome to Nova Games</h2>
+                    <p>Access the ultimate gaming experience</p>
+                </div>
+
+                <div class="auth-tabs">
+                    <button class="tab-btn active" data-tab="login">Login</button>
+                    <button class="tab-btn" data-tab="signup">Sign Up</button>
+                </div>
+
+                <form id="auth-form" class="auth-form">
+                    <div class="input-group">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="email" placeholder="Email" required>
+                    </div>
+
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="password" placeholder="Password" required>
+                    </div>
+
+                    <div class="input-group signup-only hidden">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="username" placeholder="Username">
+                    </div>
+
+                    <button type="submit" class="auth-btn">
+                        <span id="auth-btn-text">Enter Nova</span>
+                        <i class="fas fa-rocket"></i>
+                    </button>
+                </form>
+
+                <div class="auth-error hidden" id="auth-error"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="main-app" class="main-app hidden">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-star"></i>
+                    <span>NOVA GAMES</span>
+                </div>
+
+                <div class="user-menu">
+                    <span id="username-display" class="username"></span>
+                    <button id="logout-btn" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="hero-section">
+                <h1 class="hero-title">Unblocked Gaming Universe</h1>
+                <p class="hero-subtitle">Discover endless entertainment</p>
+                <div class="hero-particles"></div>
+            </div>
+
+            <!-- Games Grid -->
+            <section class="games-section">
+                <h2 class="section-title">Popular Games</h2>
+                <div class="games-grid" id="games-grid">
+                    <!-- Games will be dynamically loaded here -->
+                </div>
+            </section>
+
+            <!-- Add Game Button (Admin) -->
+            <div class="admin-section">
+                <button id="add-game-btn" class="add-game-btn">
+                    <i class="fas fa-plus"></i>
+                    Add New Game
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Game Modal -->
+    <div id="add-game-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Game</h3>
+                <button class="close-btn" id="close-add-game">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="add-game-form" class="add-game-form">
+                <div class="input-group">
+                    <label>Game Name</label>
+                    <input type="text" id="game-name" placeholder="e.g., Duck Life 1" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Game URL</label>
+                    <input type="url" id="game-url" placeholder="e.g., my-github-site.github.io/ducklife/ducklife1/index.html" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Game Image URL (optional)</label>
+                    <input type="url" id="game-image" placeholder="Image URL">
+                </div>
+
+                <div class="input-group">
+                    <label>Category</label>
+                    <select id="game-category" required>
+                        <option value="">Select Category</option>
+                        <option value="action">Action</option>
+                        <option value="adventure">Adventure</option>
+                        <option value="puzzle">Puzzle</option>
+                        <option value="racing">Racing</option>
+                        <option value="sports">Sports</option>
+                        <option value="strategy">Strategy</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="submit-btn">
+                    Add Game
+                    <i class="fas fa-plus"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+
+    <!-- Main Script -->
+    <script src="main.js"></script>
+</body>
+</html>
