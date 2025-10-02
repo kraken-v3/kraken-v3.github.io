@@ -1,13 +1,13 @@
 // Firebase Configuration
 const firebaseConfig = {
-    // Replace with your Firebase config
     apiKey: "AIzaSyCy7lVxSlpWCvN6sNSYr38APelVXppcAcU",
-    authDomain: "https://fddhgfhgfh-default-rtdb.firebaseio.com",
+    authDomain: "fddhgfhgfh.firebaseapp.com",
     databaseURL: "https://fddhgfhgfh-default-rtdb.firebaseio.com",
     projectId: "fddhgfhgfh",
     storageBucket: "fddhgfhgfh.firebasestorage.app",
     messagingSenderId: "710929135473",
-    appId: "1:710929135473:web:e1bc4117e38759ccbc68d0"
+    appId: "1:710929135473:web:e1bc4117e38759ccbc68d0",
+    measurementId: "G-NRGWFZ6DS8"
 };
 
 // Initialize Firebase
@@ -30,31 +30,29 @@ const addGameBtn = document.getElementById('add-game-btn');
 const addGameModal = document.getElementById('add-game-modal');
 const addGameForm = document.getElementById('add-game-form');
 const closeAddGameBtn = document.getElementById('close-add-game');
+const searchInput = document.getElementById('search-input');
+const clearSearchBtn = document.getElementById('clear-search');
 
 // Default games data
 const defaultGames = [
     {
         name: "Duck Life 1",
         url: "https://my-github-site.github.io/ducklife/ducklife1/index.html",
-        category: "adventure",
         image: ""
     },
     {
         name: "Duck Life 2",
         url: "https://my-github-site.github.io/ducklife/ducklife2/index.html",
-        category: "adventure",
         image: ""
     },
     {
         name: "Duck Life 3",
         url: "https://my-github-site.github.io/ducklife/ducklife3/index.html",
-        category: "adventure",
         image: ""
     },
     {
         name: "Duck Life 4",
         url: "https://my-github-site.github.io/ducklife/ducklife4/index.html",
-        category: "adventure",
         image: ""
     }
 ];
@@ -63,6 +61,8 @@ const defaultGames = [
 let currentUser = null;
 let isLogin = true;
 let games = [];
+let filteredGames = [];
+let searchTerm = '';
 
 // Initialize App
 document.addEventListener('DOMContentLoaded', () => {
@@ -108,6 +108,10 @@ function setupEventListeners() {
     addGameBtn.addEventListener('click', () => showModal(addGameModal));
     closeAddGameBtn.addEventListener('click', () => hideModal(addGameModal));
     addGameForm.addEventListener('submit', handleAddGame);
+
+    // Search functionality
+    searchInput.addEventListener('input', handleSearch);
+    clearSearchBtn.addEventListener('click', clearSearch);
 
     // Close modals on outside click
     document.addEventListener('click', (e) => {
@@ -288,7 +292,21 @@ function initializeDefaultGames() {
 function renderGames() {
     gamesGrid.innerHTML = '';
 
-    games.forEach((game, index) => {
+    const gamesToRender = searchTerm ? filteredGames : games;
+
+    if (gamesToRender.length === 0) {
+        const noGamesMsg = document.createElement('div');
+        noGamesMsg.className = 'no-games-message';
+        noGamesMsg.innerHTML = `
+            <i class="fas fa-search"></i>
+            <h3>No games found</h3>
+            <p>${searchTerm ? `No games match "${searchTerm}"` : 'No games available'}</p>
+        `;
+        gamesGrid.appendChild(noGamesMsg);
+        return;
+    }
+
+    gamesToRender.forEach((game, index) => {
         const gameCard = createGameCard(game, index);
         gamesGrid.appendChild(gameCard);
     });
@@ -308,7 +326,6 @@ function createGameCard(game, index) {
             ${gameImage}
         </div>
         <div class="game-title">${game.name}</div>
-        <div class="game-category">${game.category}</div>
     `;
 
     card.addEventListener('click', () => playGame(game.url));
@@ -327,16 +344,27 @@ function handleAddGame(e) {
     const name = document.getElementById('game-name').value;
     const url = document.getElementById('game-url').value;
     const image = document.getElementById('game-image').value;
-    const category = document.getElementById('game-category').value;
 
     const newGame = {
         name: name,
         url: url,
         image: image,
-        category: category,
         addedBy: currentUser.uid,
         addedAt: Date.now()
     };
+
+    if (DEMO_MODE) {
+        // In demo mode, just add to local games array
+        newGame.id = Date.now().toString();
+        games.push(newGame);
+        renderGames();
+
+        // Reset form and close modal
+        addGameForm.reset();
+        hideModal(addGameModal);
+        console.log('Game added successfully (demo mode)');
+        return;
+    }
 
     // Add to Firebase
     database.ref('games').push(newGame)
@@ -420,5 +448,30 @@ document.addEventListener('mousemove', (e) => {
         }
     });
 });
+
+// Search Functions
+function handleSearch(e) {
+    searchTerm = e.target.value.toLowerCase().trim();
+
+    if (searchTerm) {
+        filteredGames = games.filter(game =>
+            game.name.toLowerCase().includes(searchTerm)
+        );
+        clearSearchBtn.classList.remove('hidden');
+    } else {
+        filteredGames = [];
+        clearSearchBtn.classList.add('hidden');
+    }
+
+    renderGames();
+}
+
+function clearSearch() {
+    searchInput.value = '';
+    searchTerm = '';
+    filteredGames = [];
+    clearSearchBtn.classList.add('hidden');
+    renderGames();
+}
 
 console.log('Nova Games Hub initialized! 🚀');
